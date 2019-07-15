@@ -1,4 +1,3 @@
-#
 #Read the data, we use deng's data as a test of our method.
 data_all <- as.matrix(new.processed.data)
 Y <- as.matrix(data_all[,c(3:56)])
