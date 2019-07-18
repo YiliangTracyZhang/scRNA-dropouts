@@ -234,7 +234,9 @@ Theta = 1
           B = Beta[j]
           for(i in 1:100){
                   # 1.modeling of non-dropout
-                  mu = exp(rnorm(p))*5 # true expression level in each gene(under one cell type)
+                  mu1 = exp(rnorm(p))*5 # true expression level in each gene(cell type 1)
+                  mu2 = exp(rnorm(p))*5 # true expression level in each gene(cell type 2)
+                  mu3 = exp(rnorm(p))*5 # true expression level in each gene(cell type 3)
                   r = exp(rnorm(n))*5 # total read counts in each cell
                   l = exp(rnorm(p))*5 # length of each gene
                   b1 = rnorm(1, mean = Nu1, sd = Sigma) # batch effect in batch 1
@@ -282,7 +284,9 @@ Theta = 1
           C = Gamma[j]
           for(i in 1:100){
                   # 1.modeling of non-dropout
-                  mu = exp(rnorm(p))*5 # true expression level in each gene(under one cell type)
+                  mu1 = exp(rnorm(p))*5 # true expression level in each gene(cell type 1)
+                  mu2 = exp(rnorm(p))*5 # true expression level in each gene(cell type 2)
+                  mu3 = exp(rnorm(p))*5 # true expression level in each gene(cell type 3)
                   r = exp(rnorm(n))*5 # total read counts in each cell
                   l = exp(rnorm(p))*5 # length of each gene
                   b1 = rnorm(1, mean = Nu1, sd = Sigma) # batch effect in batch 1
@@ -328,7 +332,9 @@ Theta = 1
           Nu2 = nu2[j]
           for(i in 1:100){
                   # 1.modeling of non-dropout
-                  mu = exp(rnorm(p))*5 # true expression level in each gene(under one cell type)
+                  mu1 = exp(rnorm(p))*5 # true expression level in each gene(cell type 1)
+                  mu2 = exp(rnorm(p))*5 # true expression level in each gene(cell type 2)
+                  mu3 = exp(rnorm(p))*5 # true expression level in each gene(cell type 3)
                   r = exp(rnorm(n))*5 # total read counts in each cell
                   l = exp(rnorm(p))*5 # length of each gene
                   b1 = rnorm(1, mean = Nu1, sd = Sigma) # batch effect in batch 1
@@ -336,7 +342,13 @@ Theta = 1
                   b = c(rep(exp(b1), n/2), rep(exp(b2), n/2)) # batch effect in each cell
                   #  Lambda=(mu*l*b) %*% t(l) 
                 #  Lambda = (mu*l) %*% t(r*b) # non-dropout read count
-                  
+                  lam1 = (mu1*l) %*% t((r*b)[1:250]) 
+                  lam2 = (mu2*l) %*% t((r*b)[251:600]) 
+                  lam3 = (mu3*l) %*% t((r*b)[601:1000]) 
+                  lam4 = (mu1*l) %*% t((r*b)[1001:1300]) 
+                  lam5 = (mu2*l) %*% t((r*b)[1301:1650]) 
+                  lam6 = (mu3*l) %*% t((r*b)[1651:2000]) 
+                  Lambda <- cbind(lam1,lam2,lam3,lam4,lam5,lam6)
                   # 2.modeling of dropout effect
                   # Epsilon <- matrix(rnorm(n*p), n, p)
                   # Z=Epsilon<=(C+(A*log(r)+b) %*% t(rep(1,p))+B*rep(1,n) %*% t(l))
