@@ -1,5 +1,8 @@
 #Read the data, we use deng's data as a test of our method.
 data_all <- as.matrix(new.processed.data)
+bio.group <- c(rep(1,35), rep(2,19))
+batch.info <- c(rep(1,27),rep(2,8),rep(1,10),rep(2,9))
+total.count <- apply(new.processed.data[,3:56],2,sum)
 Y <- as.matrix(data_all[,c(3:56)])
 G_num <- length(Y[,1])
 C_num <- length(Y[1,])
@@ -33,8 +36,7 @@ sort(p.adjust(pvl$p.value))
 #Visualization, method can be chosen as 'PCA' and 'ISOmap'
 library(ggplot2)
 library(vegan)
-
-visual <- DABB_visualize(Y, total.count, gene_length, results$pweight,
+visual <- DABB_visualize(Y[,-c(22,33,35)], total.count[-c(22,33,35)], gene_length, results$pweight,
                          results$bsample, method = 'PCA', k = 10)
 ##visual <- visual$points
 pc1 <- visual[,1]
