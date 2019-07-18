@@ -48,7 +48,9 @@ Theta = 1
                   Y = Z*matrix(rpois(p*n, as.vector(Lambda)), p, n)
           }
           
-          write.table(Y, paste0('/Users/kexuanliang/documents/singlecell/simulation/alterA/A=', A, '/read', j, '.txt'), 
+      #    write.table(Y, paste0('/Users/kexuanliang/documents/singlecell/simulation/alterA/A', A, '/read', j, '.txt'), 
+       #               quote = F, col.names = F, row.names = F)
+          write.table(Y, paste0('/home/kl764/project/singlecell/simulation/alterA/', j, '.txt'), 
                       quote = F, col.names = F, row.names = F)
   }
 
@@ -84,11 +86,13 @@ Theta = 1
                   Y = Z*matrix(rpois(p*n, as.vector(Lambda)), p, n)
           }
           
-         write.table(Y, paste0('/Users/kexuanliang/documents/singlecell/simulation/alterB/B', B, '/read', j, '.txt'), quote = F, col.names = F, row.names = F)
+       #  write.table(Y, paste0('/Users/kexuanliang/documents/singlecell/simulation/alterB/B', B, '/read', j, '.txt'), quote = F, col.names = F, row.names = F)
           #file_name <- paste0('~/Desktop/simulation-data',B,'txt')
          # write.table(Y[[B]],file_name)
+          ## Repeat 100 times for each setting
+  write.table(Y, paste0('/home/kl764/project/singlecell/simulation/alterB/', j, '.txt'), 
+              quote = F, col.names = F, row.names = F)
   }
-
 
 ## Altering Gamma, when alpha=0.5, beta=0.5, nu1=-1, nu2=-1
   A = Alpha[3]
@@ -122,8 +126,10 @@ Theta = 1
                   Y = Z*matrix(rpois(p*n, as.vector(Lambda)), p, n)
           }
           
-          write.table(Y, paste0('/Users/kexuanliang/documents/singlecell/simulation/alterC/C', C, '/read', j, '.txt'), 
-                      quote = F, col.names = F, row.names = F)
+        #  write.table(Y, paste0('/Users/kexuanliang/documents/singlecell/simulation/alterC/C', C, '/read', j, '.txt'), 
+        #              quote = F, col.names = F, row.names = F)
+          write.table(Y, paste0('/home/kl764/project/singlecell/simulation/alterC/', j, '.txt'), 
+                      quote = F, col.names = F, row.names = F)       
   }
   
 ## Altering Nu1, when alpha=0.5, beta=0.5, gamma=0
@@ -158,7 +164,9 @@ Theta = 1
                   Y = Z*matrix(rpois(p*n, as.vector(Lambda)), p, n)
           }
           
-          write.table(Y, paste0('/Users/kexuanliang/documents/singlecell/simulation/alterNu/Nu', Nu1, '/read', j, '.txt'), 
+        #  write.table(Y, paste0('/Users/kexuanliang/documents/singlecell/simulation/alterNu/Nu', Nu1, '/read', j, '.txt'), 
+        #              quote = F, col.names = F, row.names = F)
+          write.table(Y, paste0('/home/kl764/project/singlecell/simulation/alterNu/', j, '.txt'), 
                       quote = F, col.names = F, row.names = F)
   }
   
@@ -221,9 +229,13 @@ Theta = 1
                   Y = Z*matrix(rpois(p*n, as.vector(Lambda)), p, n)
           }
           
-          write.table(Y, file = '/Users/kexuanliang/documents/singlecell/simulation⁩/alterA/test.txt', 
+         # write.table(Y, paste0('/Users/kexuanliang/documents/singlecell/simulation/alterA/A', Nu1, '/read', j, '.txt')', 
+         #             quote = F, col.names = F, row.names = F)
+          write.table(Y, paste0('/home/kl764/project/singlecell/simulation/alterA.ct/', j, '.txt'), 
                       quote = F, col.names = F, row.names = F)
-  }
+}
+
+  
   ## Altering Beta, when alpha=0.5, gamma=0, nu1=-1, nu2=1
   A = Alpha[3]
   C = Gamma[3]
@@ -318,7 +330,9 @@ Theta = 1
                   Y = Z*matrix(rpois(p*n, as.vector(Lambda)), p, n)
           }
           
-          write.table(Y, paste0('/Users/kexuanliang/documents/singlecell/simulation/alterC/C', C, '/read', j, '.txt'), 
+         # write.table(Y, paste0('/Users/kexuanliang/documents/singlecell/simulation/alterC/C', C, '/read', j, '.txt'), 
+         #             quote = F, col.names = F, row.names = F)
+          write.table(Y, paste0('/home/kl764/project/singlecell/simulation/alterC.ct/', j, '.txt'), 
                       quote = F, col.names = F, row.names = F)
   }
   
@@ -363,7 +377,9 @@ Theta = 1
                   Y = Z*matrix(rpois(p*n, as.vector(Lambda)), p, n)
           }
           
-          write.table(Y, paste0('/Users/kexuanliang/documents/singlecell/simulation/alterNu/Nu', Nu1, '/read', j, '.txt'), 
+        #  write.table(Y, paste0('/Users/kexuanliang/documents/singlecell/simulation/alterNu/Nu', Nu1, '/read', j, '.txt'), 
+       #               quote = F, col.names = F, row.names = F)
+          write.table(Y, paste0('/home/kl764/project/singlecell/simulation/alterNu.ct/', j, '.txt'), 
                       quote = F, col.names = F, row.names = F)
   }
   
