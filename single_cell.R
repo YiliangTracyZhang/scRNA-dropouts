@@ -24,39 +24,57 @@ results$coef
 #Qualtiy Control, alternative hypothesis can be chosen as 'left', 'right' and 'two side'.
 DABB_QC(results, alternative = 'right')
 #refit after deleting outliers
-results <- fitDABB(Y[,-c(22, 33, 35)], total.count[-c(22, 33, 35)], batch.info[-c(22, 33, 35)], bio.group[-c(22, 33, 35)], 
-                   gene_length, tech_para)
-
+#results <- fitDABB(Y[,-c(22, 33, 35)], total.count[-c(22, 33, 35)], batch.info[-c(22, 33, 35)], bio.group[-c(22, 33, 35)], 
+#                   gene_length, tech_para)
+results.qc <- fitDABB(Y[,-c(22, 33, 35)], total.count[-c(22, 33, 35)], batch.info[-c(22, 33, 35)], bio.group[-c(22, 33, 35)], 
+                  gene_length, tech_para)
 #Differential Expression
-pvl <- DABB_DE(Y[,-c(22, 33, 35)], total.count[-c(22, 33, 35)], bio.group[-c(22, 33, 35)], gene_len = gene_length, results, 
-               sample_num = 200)
+#pvl <- DABB_DE(Y[,-c(22, 33, 35)], total.count[-c(22, 33, 35)], bio.group[-c(22, 33, 35)], gene_len = gene_length, results, 
+ #              sample_num = 200)
+pvl <- DABB_DE(Y[,-c(22, 33, 35)], total.count[-c(22, 33, 35)], bio.group[-c(22, 33, 35)], gene_len = gene_length, results.qc, 
+sample_num = 200)
+
 sort(pvl$p.value, index.return = T)
 sort(p.adjust(pvl$p.value))
 
 #Visualization, method can be chosen as 'PCA' and 'ISOmap'
 library(ggplot2)
 library(vegan)
-visual <- DABB_visualize(Y[,-c(22,33,35)], total.count[-c(22,33,35)], gene_length, results$pweight,
-                         results$bsample, method = 'PCA', k = 10)
+#visual <- DABB_visualize(Y[,-c(22,33,35)], total.count[-c(22,33,35)], gene_length, results$pweight,
+#                        results$bsample, method = 'PCA', k = 10)
+visual <- DABB_visualize(Y[,-c(22,33,35)], total.count[-c(22,33,35)], gene_length, results.qc$pweight,
+                        results.qc$bsample, method = 'PCA', k = 10)
 ##visual <- visual$points
 pc1 <- visual[,1]
 pc2 <- visual[,2]
-pc1.16.88 <- pc1[1:27]
-pc1.16.193 <- pc1[28:35]
-pc1.8.88 <- pc1[36:45]
-pc1.8.193 <- pc1[46:54]
-pc2.16.88 <- pc2[1:27]
-pc2.16.193 <- pc2[28:35]
-pc2.8.88 <- pc2[36:45]
-pc2.8.193 <- pc2[46:54]
-
-p <- ggplot()
-p <- p + geom_point(data=data.frame(pc1.16.88, pc2.16.88), aes(x=pc1.16.88, y=pc2.16.88, color="16cell", shape='run0088'), size=3)
-p <- p + geom_point(data=data.frame(pc1.16.193, pc2.16.193), aes(x=pc1.16.193, y=pc2.16.193, color="16cell",shape='run00193'), size=3)
-p <- p + geom_point(data=data.frame(pc1.8.88, pc2.8.88), aes(x=pc1.8.88, y=pc2.8.88, color="8cell",shape='run0088'), size=3)
-p <- p + geom_point(data=data.frame(pc1.8.193, pc2.8.193), aes(x=pc1.8.193, y=pc2.8.193, color="8cell",shape='run00193'), size=3)
-p <- p + ggtitle('PC1 and PC2 for 16cell and 8cell in two batches')
-
+#pc1.16.88 <- pc1[1:27]
+pc1.16.88 <- pc1[1:26]# cell 22 is deleted after quality control
+#pc1.16.193 <- pc1[28:35]
+pc1.16.193 <- pc1[27:32]# cell 33 and 35 are deleted after quality control
+#pc1.8.88 <- pc1[36:45]
+pc1.8.88 <- pc1[33:42]
+#pc1.8.193 <- pc1[46:54]
+pc1.8.193 <- pc1[43:51]
+#pc2.16.88 <- pc2[1:27]
+pc2.16.88 <- pc2[1:26]# cell 22 is deleted after quality control
+#pc2.16.193 <- pc2[28:35]
+pc2.16.193 <- pc2[27:32]# cell 33 and 35 are deleted after quality control
+#pc2.8.88 <- pc2[36:45]
+pc2.8.88 <- pc2[33:42]
+#pc2.8.193 <- pc2[46:54]
+pc2.8.193 <- pc2[43:51]
+#p <- ggplot()
+#p <- p + geom_point(data=data.frame(pc1.16.88, pc2.16.88), aes(x=pc1.16.88, y=pc2.16.88, color="16cell", shape='run0088'), size=3)
+#p <- p + geom_point(data=data.frame(pc1.16.193, pc2.16.193), aes(x=pc1.16.193, y=pc2.16.193, color="16cell",shape='run00193'), size=3)
+#p <- p + geom_point(data=data.frame(pc1.8.88, pc2.8.88), aes(x=pc1.8.88, y=pc2.8.88, color="8cell",shape='run0088'), size=3)
+#p <- p + geom_point(data=data.frame(pc1.8.193, pc2.8.193), aes(x=pc1.8.193, y=pc2.8.193, color="8cell",shape='run00193'), size=3)
+#p <- p + ggtitle('PC1 and PC2 for 16cell and 8cell in two batches')
+p1 <- ggplot()
+p1 <- p1 + geom_point(data=data.frame(pc1.16.88, pc2.16.88), aes(x=pc1.16.88, y=pc2.16.88, color="16cell", shape='run0088'), size=3)
+p1 <- p1 + geom_point(data=data.frame(pc1.16.193, pc2.16.193), aes(x=pc1.16.193, y=pc2.16.193, color="16cell",shape='run00193'), size=3)
+p1 <- p1 + geom_point(data=data.frame(pc1.8.88, pc2.8.88), aes(x=pc1.8.88, y=pc2.8.88, color="8cell",shape='run0088'), size=3)
+p1 <- p1 + geom_point(data=data.frame(pc1.8.193, pc2.8.193), aes(x=pc1.8.193, y=pc2.8.193, color="8cell",shape='run00193'), size=3)
+p1 <- p1 + ggtitle('PC1 and PC2 for 16cell and 8cell in two batches')
 ####################################################################
 #Visualization of the unfitted data.
 G_num <- length(Y[,1])
@@ -83,3 +101,28 @@ p <- p + geom_point(data=data.frame(pc1.8.88, pc2.8.88), aes(x=pc1.8.88, y=pc2.8
 p <- p + geom_point(data=data.frame(pc1.8.193, pc2.8.193), aes(x=pc1.8.193, y=pc2.8.193, color="8cell",shape='run00193'), size=3)
 p <- p + ggtitle('PC1 and PC2 for 16cell and 8cell in two batches')
 
+
+#Visualization of the unfitted data.
+G_num <- length(Y[,1])
+C_num <- length(Y[1,])
+sample_num <- length(results$bsample[1,])
+visual <- DABB_visualize(Y, total.count, gene_length, matrix(1, G_num, C_num),
+                         b_sample_mat = matrix(0, C_num, sample_num), method = 'PCA', k = 10)
+##visual <- visual$points
+pc1 <- visual[,1]
+pc2 <- visual[,2]
+pc1.16.88 <- pc1[1:27]
+pc1.16.193 <- pc1[28:35]
+pc1.8.88 <- pc1[36:45]
+pc1.8.193 <- pc1[46:54]
+pc2.16.88 <- pc2[1:27]
+pc2.16.193 <- pc2[28:35]
+pc2.8.88 <- pc2[36:45]
+pc2.8.193 <- pc2[46:54]
+
+p <- ggplot()
+p <- p + geom_point(data=data.frame(pc1.16.88, pc2.16.88), aes(x=pc1.16.88, y=pc2.16.88, color="16cell", shape='run0088'), size=3)
+p <- p + geom_point(data=data.frame(pc1.16.193, pc2.16.193), aes(x=pc1.16.193, y=pc2.16.193, color="16cell",shape='run00193'), size=3)
+p <- p + geom_point(data=data.frame(pc1.8.88, pc2.8.88), aes(x=pc1.8.88, y=pc2.8.88, color="8cell",shape='run0088'), size=3)
+p <- p + geom_point(data=data.frame(pc1.8.193, pc2.8.193), aes(x=pc1.8.193, y=pc2.8.193, color="8cell",shape='run00193'), size=3)
+p <- p + ggtitle('PC1 and PC2 for 16cell and 8cell in two batches')

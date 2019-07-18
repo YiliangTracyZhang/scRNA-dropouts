@@ -305,7 +305,7 @@ DABB_visualize <- function(Y, tot_read, gene_len, p_weight, b_sample_mat,
   RL_mat <- gene_len %*% t(tot_read) / 10^9
   expect_expb <- rowMeans(exp(b_sample_mat))
   ##Y_adj <- log(t(t(Y / RL_mat) / expect_expb) + 1)
-  Y_adj <- t(t(Y.qc / RL_mat) / expect_expb)
+  Y_adj <- t(t(Y / RL_mat) / expect_expb)
   ##Y_adj <- t(t(log(Y / RL_mat + 1)) / expect_expb)
   Y_shift <- t(t(Y_adj) - colSums(Y_adj * p_weight) / colSums(p_weight))
   Y_weight <- Y_shift * p_weight

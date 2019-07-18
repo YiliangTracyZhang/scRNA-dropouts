@@ -62,9 +62,9 @@ Theta = 1
           B = Beta[j]
           for(i in 1:100){
       # 1.modeling of non-dropout
-                  mu = exp(rnorm(p)) # true expression level in each gene(under one cell type)
-                  r = exp(rnorm(n)) # total read counts in each cell
-                  l = exp(rnorm(p)) # length of each gene
+                  mu = exp(rnorm(p))*5 # true expression level in each gene(under one cell type)
+                  r = exp(rnorm(n))*5 # total read counts in each cell
+                  l = exp(rnorm(p))*5 # length of each gene
                   b1 = rnorm(1, mean = Nu1, sd = Sigma) # batch effect in batch 1
                   b2 = rnorm(1, mean = Nu2, sd = Sigma) # batch effect in batch 2
                   b = c(rep(exp(b1), n/2), rep(exp(b2), n/2)) # batch effect in each cell
@@ -100,9 +100,9 @@ Theta = 1
           C = Gamma[j]
           for(i in 1:100){
   # 1.modeling of non-dropout
-                  mu = exp(rnorm(p)) # true expression level in each gene(under one cell type)
-                  r = exp(rnorm(n)) # total read counts in each cell
-                  l = exp(rnorm(p)) # length of each gene
+                  mu = exp(rnorm(p))*5 # true expression level in each gene(under one cell type)
+                  r = exp(rnorm(n))*5 # total read counts in each cell
+                  l = exp(rnorm(p))*5 # length of each gene
                   b1 = rnorm(1, mean = Nu1, sd = Sigma) # batch effect in batch 1
                   b2 = rnorm(1, mean = Nu2, sd = Sigma) # batch effect in batch 2
                   b = c(rep(exp(b1), n/2), rep(exp(b2), n/2)) # batch effect in each cell
@@ -136,9 +136,9 @@ Theta = 1
           Nu2 = nu2[j]
           for(i in 1:100){
    # 1.modeling of non-dropout
-                  mu = exp(rnorm(p)) # true expression level in each gene(under one cell type)
-                  r = exp(rnorm(n)) # total read counts in each cell
-                  l = exp(rnorm(p)) # length of each gene
+                  mu = exp(rnorm(p))*5 # true expression level in each gene(under one cell type)
+                  r = exp(rnorm(n))*5 # total read counts in each cell
+                  l = exp(rnorm(p))*5 # length of each gene
                   b1 = rnorm(1, mean = Nu1, sd = Sigma) # batch effect in batch 1
                   b2 = rnorm(1, mean = Nu2, sd = Sigma) # batch effect in batch 2
                   b = c(rep(exp(b1), n/2), rep(exp(b2), n/2)) # batch effect in each cell
@@ -234,9 +234,9 @@ Theta = 1
           B = Beta[j]
           for(i in 1:100){
                   # 1.modeling of non-dropout
-                  mu = exp(rnorm(p)) # true expression level in each gene(under one cell type)
-                  r = exp(rnorm(n)) # total read counts in each cell
-                  l = exp(rnorm(p)) # length of each gene
+                  mu = exp(rnorm(p))*5 # true expression level in each gene(under one cell type)
+                  r = exp(rnorm(n))*5 # total read counts in each cell
+                  l = exp(rnorm(p))*5 # length of each gene
                   b1 = rnorm(1, mean = Nu1, sd = Sigma) # batch effect in batch 1
                   b2 = rnorm(1, mean = Nu2, sd = Sigma) # batch effect in batch 2
                   b = c(rep(exp(b1), n/2), rep(exp(b2), n/2)) # batch effect in each cell
@@ -282,9 +282,9 @@ Theta = 1
           C = Gamma[j]
           for(i in 1:100){
                   # 1.modeling of non-dropout
-                  mu = exp(rnorm(p)) # true expression level in each gene(under one cell type)
-                  r = exp(rnorm(n)) # total read counts in each cell
-                  l = exp(rnorm(p)) # length of each gene
+                  mu = exp(rnorm(p))*5 # true expression level in each gene(under one cell type)
+                  r = exp(rnorm(n))*5 # total read counts in each cell
+                  l = exp(rnorm(p))*5 # length of each gene
                   b1 = rnorm(1, mean = Nu1, sd = Sigma) # batch effect in batch 1
                   b2 = rnorm(1, mean = Nu2, sd = Sigma) # batch effect in batch 2
                   b = c(rep(exp(b1), n/2), rep(exp(b2), n/2)) # batch effect in each cell
@@ -328,9 +328,9 @@ Theta = 1
           Nu2 = nu2[j]
           for(i in 1:100){
                   # 1.modeling of non-dropout
-                  mu = exp(rnorm(p)) # true expression level in each gene(under one cell type)
-                  r = exp(rnorm(n)) # total read counts in each cell
-                  l = exp(rnorm(p)) # length of each gene
+                  mu = exp(rnorm(p))*5 # true expression level in each gene(under one cell type)
+                  r = exp(rnorm(n))*5 # total read counts in each cell
+                  l = exp(rnorm(p))*5 # length of each gene
                   b1 = rnorm(1, mean = Nu1, sd = Sigma) # batch effect in batch 1
                   b2 = rnorm(1, mean = Nu2, sd = Sigma) # batch effect in batch 2
                   b = c(rep(exp(b1), n/2), rep(exp(b2), n/2)) # batch effect in each cell
