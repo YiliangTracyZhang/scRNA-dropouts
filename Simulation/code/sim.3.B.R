@@ -10,8 +10,10 @@ p = 10000
 # the number of cells, each batch contains half of the cells
 n = 2000 
 # parameters
-Alpha = c(0,0.2,0.5,0.7,1)
-Beta = c(0,0.2,0.5,0.7,1)
+#Alpha = c(0,0.2,0.5,0.7,1)
+Alpha = c(-0.1,0,0.1,0.3,0.5)
+#Beta = c(0,0.2,0.5,0.7,1)
+Beta = c(-0.1,0,0.1,0.3,0.5)
 Gamma = c(-2,-1,0,1,2)
 nu1 = c(-2,-1.5,-1,-0.5,0)
 nu2 = c(2,1.5,1,0.5,0)
