@@ -40,7 +40,7 @@ for(j in 1:5){
         B = Beta[j]
         for(i in 1:100){
                 # 1.modeling of non-dropout
-                r = exp(rnorm(n))*20 # total read counts in each cell
+                r = exp(rnorm(n))*10 # total read counts in each cell
                 b1 = rnorm(1, mean = Nu1, sd = Sigma) # batch effect in batch 1
                 b2 = rnorm(1, mean = Nu2, sd = Sigma) # batch effect in batch 2
                 b = c(rep(b1, n/2), rep(b2, n/2))
