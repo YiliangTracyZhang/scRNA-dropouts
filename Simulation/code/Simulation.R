@@ -107,7 +107,7 @@ Theta = 1
                   Epsilon <- matrix(rnorm(p*n), p, n)
                   Z = Epsilon <= (
                           C*rep(1,p)%*%t(rep(1,n))
-                          + rep(1,p) %*% t(A*log(r)+b)
+                          + rep(1,p) %*% t(A*log(r)+b*Theta))
                           + log(l) %*% t(B*rep(1,n))
                   ) 
                   
@@ -148,7 +148,7 @@ Theta = 1
                   Epsilon <- matrix(rnorm(p*n), p, n)
                   Z = Epsilon <= (
                           C*rep(1,p)%*%t(rep(1,n))
-                          + rep(1,p) %*% t(A*log(r)+b)
+                          + rep(1,p) %*% t(A*log(r)+b*Theta)
                           + log(l) %*% t(B*rep(1,n))
                   ) 
                   
@@ -187,7 +187,7 @@ Theta = 1
                   Epsilon <- matrix(rnorm(p*n), p, n)
                   Z = Epsilon <= (
                           C*rep(1,p)%*%t(rep(1,n))
-                          + rep(1,p) %*% t(A*log(r)+b)
+                          + rep(1,p) %*% t(A*log(r)+b*Theta)
                           + log(l) %*% t(B*rep(1,n))
                   ) 
                   
@@ -245,7 +245,7 @@ Theta = 1
                   Epsilon <- matrix(rnorm(p*n), p, n)
                   Z = Epsilon <= (
                           C*rep(1,p)%*%t(rep(1,n))
-                          + rep(1,p) %*% t(A*log(r)+b)
+                          + rep(1,p) %*% t(A*log(r)+b*Theta)
                           + log(l) %*% t(B*rep(1,n))
                   ) 
                   
@@ -292,7 +292,7 @@ Theta = 1
                   Epsilon <- matrix(rnorm(p*n), p, n)
                   Z = Epsilon <= (
                           C*rep(1,p)%*%t(rep(1,n))
-                          + rep(1,p) %*% t(A*log(r)+b)
+                          + rep(1,p) %*% t(A*log(r)+b*Theta)
                           + log(l) %*% t(B*rep(1,n))
                   ) 
                   
@@ -338,7 +338,7 @@ Theta = 1
                   Epsilon <- matrix(rnorm(p*n), p, n)
                   Z = Epsilon <= (
                           C*rep(1,p)%*%t(rep(1,n))
-                          + rep(1,p) %*% t(A*log(r)+b)
+                          + rep(1,p) %*% t(A*log(r)+b*Theta)
                           + log(l) %*% t(B*rep(1,n))
                   ) 
                   
@@ -384,7 +384,7 @@ Theta = 1
                   Epsilon <- matrix(rnorm(p*n), p, n)
                   Z = Epsilon <= (
                           C*rep(1,p)%*%t(rep(1,n))
-                          + rep(1,p) %*% t(A*log(r)+b)
+                          + rep(1,p) %*% t(A*log(r)+b*Theta)
                           + log(l) %*% t(B*rep(1,n))
                   ) 
                   

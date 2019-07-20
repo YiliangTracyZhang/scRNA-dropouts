@@ -1,5 +1,6 @@
 ## Repeat 100 times for each setting
 rm(list=ls())
+set.seed(19720)
 
 # the number of genes
 p = 10000 
@@ -65,16 +66,17 @@ for(j in 1:5){
                 Epsilon <- matrix(rnorm(p*n), p, n)
                 Z = Epsilon <= (
                         C*rep(1,p)%*%t(rep(1,n))
-                        + rep(1,p) %*% t(A*log(r)+b)
+                        + rep(1,p) %*% t(A*log(r)+b*Theta)
                         + log(l) %*% t(B*rep(1,n))
                 ) 
                 
                 # 3.expression of read count
                 #Y=Z*matrix(rpois(n*p, as.vector(Lambda)), n, p)
                 Y = Z*matrix(rpois(p*n, as.vector(Lambda)), p, n)
+                Y = cbind(Y,l)
         }
         #  write.table(Y, paste0('/Users/kexuanliang/documents/singlecell/simulation/alterNu/Nu', Nu1, '/read', j, '.txt'), 
         #               quote = F, col.names = F, row.names = F)
-        write.table(Y, paste0('/home/kl764/project/singlecell/simulation/alterNu.ct/', j, '.txt'), 
+        write.table(Y, paste0('/home/kl764/project/singlecell/simulation/alterNu.ct/', j, 'gene.txt'), 
                     quote = F, col.names = F, row.names = F)
 }

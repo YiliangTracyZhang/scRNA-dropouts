@@ -1,5 +1,6 @@
 ## Repeat 100 times for each setting
 rm(list=ls())
+set.seed(19720)
 
 # the number of genes
 p = 10000 
@@ -61,10 +62,11 @@ for(j in 1:5){
                 # 3.expression of read count
                 #Y=Z*matrix(rpois(n*p, as.vector(Lambda)), n, p)
                 Y = Z*matrix(rpois(p*n, as.vector(Lambda)), p, n)
+                Y = cbind(Y,l)
         }
         
         #    write.table(Y, paste0('/Users/kexuanliang/documents/singlecell/simulation/alterA/A', A, '/read', j, '.txt'), 
         #               quote = F, col.names = F, row.names = F)
-        write.table(Y, paste0('/home/kl764/project/singlecell/simulation/alterA/', j, '.txt'), 
+        write.table(Y, paste0('/home/kl764/project/singlecell/simulation/alterA/', j, 'gene.txt'), 
                     quote = F, col.names = F, row.names = F)
 }
