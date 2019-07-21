@@ -69,6 +69,6 @@ for(j in 1:5){
         #file_name <- paste0('~/Desktop/simulation-data',B,'txt')
         # write.table(Y[[B]],file_name)
         ## Repeat 100 times for each setting
-        write.table(Y, paste0('/home/kl764/project/singlecell/simulation/alterB/', j, 'gene.txt'), 
+        write.table(Y, paste0('/home/kl764/project/singlecell/simulation/alterB/', j,'-', i, '.txt'), 
                     quote = F, col.names = F, row.names = F)
 }

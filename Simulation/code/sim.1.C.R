@@ -66,6 +66,6 @@ for(j in 1:5){
         
         #  write.table(Y, paste0('/Users/kexuanliang/documents/singlecell/simulation/alterC/C', C, '/read', j, '.txt'), 
         #              quote = F, col.names = F, row.names = F)
-        write.table(Y, paste0('/home/kl764/project/singlecell/simulation/alterC/', j, 'gene.txt'), 
+        write.table(Y, paste0('/home/kl764/project/singlecell/simulation/alterC/', j,'-', i, '.txt'), 
                     quote = F, col.names = F, row.names = F)       
 }
