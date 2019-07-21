@@ -73,10 +73,10 @@ for(j in 1:5){
                 #Y=Z*matrix(rpois(n*p, as.vector(Lambda)), n, p)
                 Y = Z*matrix(rpois(p*n, as.vector(Lambda)), p, n)
                 Y = cbind(Y,l)
+                write.table(Y, paste0('/home/kl764/project/singlecell/simulation/alterB.ct/',  B, '/read', i, '.txt'), 
+                            quote = F, col.names = F, row.names = F)
+                #file_name <- paste0('~/Desktop/simulation-data',B,'txt')
+                # write.table(Y[[B]],file_name)
         }
         
-        write.table(Y, paste0('/home/kl764/project/singlecell/simulation/alterB.ct/',  B, '/read', i, '.txt'), 
-                    quote = F, col.names = F, row.names = F)
-        #file_name <- paste0('~/Desktop/simulation-data',B,'txt')
-        # write.table(Y[[B]],file_name)
 }

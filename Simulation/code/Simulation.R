@@ -76,13 +76,14 @@ Theta = 1
                   # 3.expression of read count
                   #Y=Z*matrix(rpois(n*p, as.vector(Lambda)), n, p)
                   Y = Z*matrix(rpois(p*n, as.vector(Lambda)), p, n)
-          }
+          
           
         # write.table(Y, paste0('/Users/kexuanliang/documents/singlecell/simulation/alterA/', j,'-',i ,'.txt'), 
                 #     quote = F, col.names = F, row.names = F)
 
-          write.table(Y, paste0('/home/kl764/project/singlecell/simulation/alterA/', j,'-', i, '.txt'), 
+          write.table(Y, paste0('/home/kl764/project/singlecell/simulation/alterA/',  A, '/read', i, '.txt'), 
                       quote = F, col.names = F, row.names = F)
+          }
   }
 
 ## Altering Beta, when alpha=0.5, gamma=0, nu1=-1, nu2=1
@@ -116,14 +117,15 @@ Theta = 1
        # 3.expression of read count
                   #Y=Z*matrix(rpois(n*p, as.vector(Lambda)), n, p)
                   Y = Z*matrix(rpois(p*n, as.vector(Lambda)), p, n)
-          }
+          
           
        #  write.table(Y, paste0('/Users/kexuanliang/documents/singlecell/simulation/alterB/B', B, '/read', j, '.txt'), quote = F, col.names = F, row.names = F)
           #file_name <- paste0('~/Desktop/simulation-data',B,'txt')
          # write.table(Y[[B]],file_name)
           ## Repeat 100 times for each setting
-  write.table(Y, paste0('/home/kl764/project/singlecell/simulation/alterB/', j,'-', i, '.txt'), 
+     write.table(Y, paste0('/home/kl764/project/singlecell/simulation/alterB/',  B, '/read', i, '.txt'), 
               quote = F, col.names = F, row.names = F)
+          }
   }
 
 ## Altering Gamma, when alpha=0.5, beta=0.5, nu1=-1, nu2=-1
@@ -157,12 +159,12 @@ Theta = 1
    # 3.expression of read count
                   #Y=Z*matrix(rpois(n*p, as.vector(Lambda)), n, p)
                   Y = Z*matrix(rpois(p*n, as.vector(Lambda)), p, n)
-          }
-          
+        
         #  write.table(Y, paste0('/Users/kexuanliang/documents/singlecell/simulation/alterC/C', C, '/read', j, '.txt'), 
         #              quote = F, col.names = F, row.names = F)
-          write.table(Y, paste0('/home/kl764/project/singlecell/simulation/alterC/', j,'-', i, '.txt'), 
+          write.table(Y, paste0('/home/kl764/project/singlecell/simulation/alterC/',  C, '/read', i, '.txt'), 
                       quote = F, col.names = F, row.names = F)       
+          }
   }
   
 ## Altering Nu1, when alpha=0.5, beta=0.5, gamma=0
@@ -196,12 +198,12 @@ Theta = 1
    # 3.expression of read count
                   #Y=Z*matrix(rpois(n*p, as.vector(Lambda)), n, p)
                   Y = Z*matrix(rpois(p*n, as.vector(Lambda)), p, n)
-          }
           
         #  write.table(Y, paste0('/Users/kexuanliang/documents/singlecell/simulation/alterNu/Nu', Nu1, '/read', j, '.txt'), 
         #              quote = F, col.names = F, row.names = F)
-          write.table(Y, paste0('/home/kl764/project/singlecell/simulation/alterNu/', j,'-', i, '.txt'), 
+          write.table(Y, paste0('/home/kl764/project/singlecell/simulation/alterNu/', Nu1, '/read', i, '.txt'), 
                       quote = F, col.names = F, row.names = F)
+          }
   }
   
 ##################################
@@ -254,13 +256,13 @@ Theta = 1
            # 3.expression of read count
                   #Y=Z*matrix(rpois(n*p, as.vector(Lambda)), n, p)
                   Y = Z*matrix(rpois(p*n, as.vector(Lambda)), p, n)
-          }
           
          # write.table(Y, paste0('/Users/kexuanliang/documents/singlecell/simulation/alterA/A', Nu1, '/read', j, '.txt')', 
          #             quote = F, col.names = F, row.names = F)
-          write.table(Y, paste0('/home/kl764/project/singlecell/simulation/alterA.ct/', j,'-', i, '.txt'), 
+          write.table(Y, paste0('/home/kl764/project/singlecell/simulation/alterA.ct/',  A, '/read', i, '.txt'), 
                       quote = F, col.names = F, row.names = F)
-}
+          }
+  }
 
   
   ## Altering Beta, when alpha=0.5, gamma=0, nu1=-1, nu2=1
@@ -301,11 +303,12 @@ Theta = 1
           # 3.expression of read count
                   #Y=Z*matrix(rpois(n*p, as.vector(Lambda)), n, p)
                   Y = Z*matrix(rpois(p*n, as.vector(Lambda)), p, n)
-          }
           
-          write.table(Y, paste0('/home/kl764/project/singlecell/simulation/alterB.ct/', j,'-', i, '.txt'), quote = F, col.names = F, row.names = F)
+          write.table(Y, paste0('/home/kl764/project/singlecell/simulation/alterB.ct/',  B, '/read', i, '.txt'), 
+                      quote = F, col.names = F, row.names = F)
           #file_name <- paste0('~/Desktop/simulation-data',B,'txt')
           # write.table(Y[[B]],file_name)
+          }
   }
   
   
@@ -347,12 +350,12 @@ Theta = 1
         # 3.expression of read count
                   #Y=Z*matrix(rpois(n*p, as.vector(Lambda)), n, p)
                   Y = Z*matrix(rpois(p*n, as.vector(Lambda)), p, n)
-          }
           
          # write.table(Y, paste0('/Users/kexuanliang/documents/singlecell/simulation/alterC/C', C, '/read', j, '.txt'), 
          #             quote = F, col.names = F, row.names = F)
-          write.table(Y, paste0('/home/kl764/project/singlecell/simulation/alterC.ct/', j,'-', i, '.txt'), 
+          write.table(Y, paste0('/home/kl764/project/singlecell/simulation/alterC.ct/',  C, '/read', i, '.txt'), 
                       quote = F, col.names = F, row.names = F)
+          }
   }
   
   ## Altering Nu1, when alpha=0.5, beta=0.5, gamma=0
@@ -393,10 +396,11 @@ Theta = 1
                   # 3.expression of read count
                   #Y=Z*matrix(rpois(n*p, as.vector(Lambda)), n, p)
                   Y = Z*matrix(rpois(p*n, as.vector(Lambda)), p, n)
-          }
+                  
         #  write.table(Y, paste0('/Users/kexuanliang/documents/singlecell/simulation/alterNu/Nu', Nu1, '/read', j, '.txt'), 
        #               quote = F, col.names = F, row.names = F)
-          write.table(Y, paste0('/home/kl764/project/singlecell/simulation/alterNu.ct/', j,'-', i, '.txt'), 
+          write.table(Y, paste0('/home/kl764/project/singlecell/simulation/alterNu.ct/',  Nu1, '/read', i, '.txt'), 
                       quote = F, col.names = F, row.names = F)
+          }
   }
   

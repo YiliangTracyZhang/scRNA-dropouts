@@ -64,9 +64,9 @@ for(j in 1:5){
                 Y = Z*matrix(rpois(p*n, as.vector(Lambda)), p, n)
                 Y = cbind(Y,l)
         
-         # write.table(Y, paste0('/Users/kexuanliang/documents/singlecell/simulation/alterA/', j, '.txt'), 
-               #       quote = F, col.names = F, row.names = F)
-        write.table(Y, paste0('/home/kl764/project/singlecell/simulation/alterA/', A, '/read', i, '.txt'), 
-                   quote = F, col.names = F, row.names = F)
+          write.table(Y, paste0('/Users/kexuanliang/documents/singlecell/simulation/alterA/', A, '/read', i, '.txt'), 
+                      quote = F, col.names = F, row.names = F)
+        #write.table(Y, paste0('/home/kl764/project/singlecell/simulation/alterA/', A, '/read', i, '.txt'), 
+                   #quote = F, col.names = F, row.names = F)
         }
 }
