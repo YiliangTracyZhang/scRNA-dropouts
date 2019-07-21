@@ -77,6 +77,6 @@ for(j in 1:5){
         
         # write.table(Y, paste0('/Users/kexuanliang/documents/singlecell/simulation/alterC/C', C, '/read', j, '.txt'), 
         #             quote = F, col.names = F, row.names = F)
-        write.table(Y, paste0('/home/kl764/project/singlecell/simulation/alterC.ct/', j,'-', i, '.txt'), 
+        write.table(Y, paste0('/home/kl764/project/singlecell/simulation/alterC.ct/',  C, '/read', i, '.txt'), 
                     quote = F, col.names = F, row.names = F)
 }
