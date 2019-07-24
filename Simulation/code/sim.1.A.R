@@ -37,9 +37,9 @@ Nu1 = nu1[3]
 Nu2 = nu2[3]
 
 
-#for(j in 1:5){
+for(j in 1:5){
         A = Alpha[j]
-#        for(i in 1:100){
+       for(i in 1:100){
                 # 1.modeling of non-dropout
                 r = exp(rnorm(n))#*10 # total read counts in each cell
                 b1 = rnorm(1, mean = Nu1, sd = Sigma) # batch effect in batch 1
@@ -68,5 +68,5 @@ Nu2 = nu2[3]
                    #   quote = F, col.names = F, row.names = F)
         write.table(Y, paste0('/home/kl764/project/singlecell/simulation/alterA/', A, '/read', i, '.txt'), 
                    quote = F, col.names = F, row.names = F)
-#        }
-#}
+       }
+}
