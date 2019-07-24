@@ -1,26 +1,32 @@
 #Read the data, we use deng's data as a test of our method.
 #data_all <- as.matrix(new.processed.data)
-raw.data <- read.table('/home/kl764/project/singlecell/simulation/alterA/0.1/read1.txt', sep = '', header = F)
-
+#Scenario = args[1]
+#raw.data <- read.table('/home/kl764/project/singlecell/simulation/alterA/0.1/read1.txt', sep = '', header = F)
+setwd('~/Documents/singlecell/simulation/alterA/0/')
+data <- dir(path = '~/Documents/singlecell/simulation/alterA/0/', pattern = ".txt")
+parameters<-c()
+for( i in 1:length(data)){
+raw.data<- read.table(data[i], sep = '', header = F)
 data_all <- as.matrix(raw.data)
 #head(data_all)
 #bio.group <- c(rep(1,35), rep(2,19))
 #bio.group <- c(rep(1,250), rep(2,350),rep(3,400),rep(1,300),rep(2,350),rep(3,350))
-bio.group <- c(rep(1,2000))
+bio.group <- c(rep(1,100))
 #batch.info <- c(rep(1,27),rep(2,8),rep(1,10),rep(2,9))
-batch.info <- c(rep(1,1000),rep(2,1000))
+batch.info <- c(rep(1,100))
 #total.count <- apply(new.processed.data[,3:56],2,sum)
-total.count <- apply(raw.data[,1:2000],2,sum)
+total.count <- apply(raw.data[,1:100],2,sum)
 #Y <- as.matrix(data_all[,c(3:56)])
-Y <- as.matrix(data_all[,c(1:2000)])
+Y <- as.matrix(data_all[,c(1:100)])
 G_num <- length(Y[,1])
 C_num <- length(Y[1,])
 Y <- matrix(as.numeric(Y), G_num, C_num)
-gene_length <- as.numeric(as.vector(data_all[,2001]))
+gene_length <- as.numeric(as.vector(data_all[,101]))
 
 tech_para <- list(iternum = 100, error = 1e-5, mhnum = 300, jump_rate = 0.15,
                   jump = 0.03, burnin = 50)
-source('/home/kl764/project/singlecell/git/scRNA-dropouts/fitDABB_function.R')
+#source('/home/kl764/project/singlecell/git/scRNA-dropouts/fitDABB_function.R')
+source('/Users/kexuanliang/documents/singlecell/git/scRNA-dropouts/fitDABB_function.R')
 #fit the model:
 #Y is the G*C read count matrix, total.count is a vector of each cell's total read counts,
 #batch.info is a vector, the index of the batch each cell belongs to, bio.group is a 
@@ -29,8 +35,15 @@ source('/home/kl764/project/singlecell/git/scRNA-dropouts/fitDABB_function.R')
 #Among these parameters, jump_rate and jump are used to control the acceptance rate of 
 #Metropolis-Hasting alogrithm. A recommanded rate ranges from 0.2 to 0.45.
 results <- fitDABB(Y, total.count, batch.info, bio.group, gene_length, tech_para)
-results
+write.table(results, paste0('/Users/kexuanliang/documents/singlecell/simulation/alterA.result/0/',i,'.txt'), 
+            quote = F, col.names = F, row.names = F)
+parameters <- rbind(parameters,cbind(results$nu,results$sigma2,results$coef))
+}
 
+para<-data.frame(t(as.matrix(parameters)))
+names(para)<-c('nu','sigma2','gamma','alpha','beta','batch.effect')
+p<-boxplot(para)
+#library(ggplot2)
 #a1.coef <- data.frame(1, 1:100, results$coef)
 #Qualtiy Control, alternative hypothesis can be chosen as 'left', 'right' and 'two side'.
 #DABB_QC(results, alternative = 'right')
