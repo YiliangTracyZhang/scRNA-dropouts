@@ -1,6 +1,7 @@
 #Read the data, we use deng's data as a test of our method.
 #data_all <- as.matrix(new.processed.data)
 raw.data <- read.table('/home/kl764/project/singlecell/simulation/alterA/0.1/read1.txt', sep = '', header = F)
+
 data_all <- as.matrix(raw.data)
 #head(data_all)
 #bio.group <- c(rep(1,35), rep(2,19))

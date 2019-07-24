@@ -14,7 +14,7 @@ l = exp(rnorm(p))*100
 ################################
 
 # true expression level in each gene is fixed(under one cell type) 
-mu = (rnorm(p, sd=0.5))^2 
+mu = (rnorm(p, sd=0.5))^2
 
 # parameters
 #Alpha = c(0,0.2,0.5,0.7,1)
@@ -37,11 +37,11 @@ Nu1 = nu1[3]
 Nu2 = nu2[3]
 
 
-for(j in 1:5){
+#for(j in 1:5){
         A = Alpha[j]
-        for(i in 1:100){
+#        for(i in 1:100){
                 # 1.modeling of non-dropout
-                r = exp(rnorm(n))*10 # total read counts in each cell
+                r = exp(rnorm(n))#*10 # total read counts in each cell
                 b1 = rnorm(1, mean = Nu1, sd = Sigma) # batch effect in batch 1
                 b2 = rnorm(1, mean = Nu2, sd = Sigma) # batch effect in batch 2
                 b = c(rep(b1, n/2), rep(b2, n/2))
@@ -65,8 +65,8 @@ for(j in 1:5){
                 Y = cbind(Y,l)
         
          # write.table(Y, paste0('/Users/kexuanliang/documents/singlecell/simulation/alterA/', A, '/read', i, '.txt'), 
-                  #    quote = F, col.names = F, row.names = F)
+                   #   quote = F, col.names = F, row.names = F)
         write.table(Y, paste0('/home/kl764/project/singlecell/simulation/alterA/', A, '/read', i, '.txt'), 
                    quote = F, col.names = F, row.names = F)
-        }
-}
+#        }
+#}

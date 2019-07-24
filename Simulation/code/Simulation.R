@@ -55,7 +55,7 @@ Theta = 1
           A = Alpha[j]
           for(i in 1:100){
                   # 1.modeling of non-dropout
-                  r = exp(rnorm(n))*10 # total read counts in each cell
+                  r = exp(rnorm(n)) # total read counts in each cell
                   b1 = rnorm(1, mean = Nu1, sd = Sigma) # batch effect in batch 1
                   b2 = rnorm(1, mean = Nu2, sd = Sigma) # batch effect in batch 2
                   b = c(rep(b1, n/2), rep(b2, n/2))
@@ -96,7 +96,7 @@ Theta = 1
           B = Beta[j]
           for(i in 1:100){
       # 1.modeling of non-dropout
-                  r = exp(rnorm(n))*10 # total read counts in each cell
+                  r = exp(rnorm(n))# total read counts in each cell
                   b1 = rnorm(1, mean = Nu1, sd = Sigma) # batch effect in batch 1
                   b2 = rnorm(1, mean = Nu2, sd = Sigma) # batch effect in batch 2
                   b = c(rep(b1, n/2), rep(b2, n/2))
@@ -112,7 +112,7 @@ Theta = 1
                           C*rep(1,p)%*%t(rep(1,n))
                           + rep(1,p) %*% t(A*log(r)+b*Theta))
                           + log(l) %*% t(B*rep(1,n))
-                  ) 
+                  
                   
        # 3.expression of read count
                   #Y=Z*matrix(rpois(n*p, as.vector(Lambda)), n, p)
@@ -138,7 +138,7 @@ Theta = 1
           C = Gamma[j]
           for(i in 1:100){
   # 1.modeling of non-dropout
-                  r = exp(rnorm(n))*10 # total read counts in each cell
+                  r = exp(rnorm(n))# total read counts in each cell
                   b1 = rnorm(1, mean = Nu1, sd = Sigma) # batch effect in batch 1
                   b2 = rnorm(1, mean = Nu2, sd = Sigma) # batch effect in batch 2
                   b = c(rep(b1, n/2), rep(b2, n/2))
@@ -177,7 +177,7 @@ Theta = 1
           Nu2 = nu2[j]
           for(i in 1:100){
    # 1.modeling of non-dropout
-                  r = exp(rnorm(n))*10 # total read counts in each cell
+                  r = exp(rnorm(n)) # total read counts in each cell
                   b1 = rnorm(1, mean = Nu1, sd = Sigma) # batch effect in batch 1
                   b2 = rnorm(1, mean = Nu2, sd = Sigma) # batch effect in batch 2
                   b = c(rep(b1, n/2), rep(b2, n/2))
@@ -228,7 +228,7 @@ Theta = 1
           A = Alpha[j]
           for(i in 1:100){
           # 1.modeling of non-dropout
-                  r = exp(rnorm(n))*10 # total read counts in each cell
+                  r = exp(rnorm(n)) # total read counts in each cell
                   b1 = rnorm(1, mean = Nu1, sd = Sigma) # batch effect in batch 1
                   b2 = rnorm(1, mean = Nu2, sd = Sigma) # batch effect in batch 2
                   b = c(rep(b1, n/2), rep(b2, n/2))
@@ -275,7 +275,7 @@ Theta = 1
           B = Beta[j]
           for(i in 1:100){
           # 1.modeling of non-dropout
-                  r = exp(rnorm(n))*10 # total read counts in each cell
+                  r = exp(rnorm(n)) # total read counts in each cell
                   b1 = rnorm(1, mean = Nu1, sd = Sigma) # batch effect in batch 1
                   b2 = rnorm(1, mean = Nu2, sd = Sigma) # batch effect in batch 2
                   b = c(rep(b1, n/2), rep(b2, n/2))
@@ -322,7 +322,7 @@ Theta = 1
           C = Gamma[j]
           for(i in 1:100){
          # 1.modeling of non-dropout
-                  r = exp(rnorm(n))*10 # total read counts in each cell
+                  r = exp(rnorm(n)) # total read counts in each cell
                   b1 = rnorm(1, mean = Nu1, sd = Sigma) # batch effect in batch 1
                   b2 = rnorm(1, mean = Nu2, sd = Sigma) # batch effect in batch 2
                   b = c(rep(b1, n/2), rep(b2, n/2))
@@ -368,7 +368,7 @@ Theta = 1
           Nu2 = nu2[j]
           for(i in 1:100){
                   # 1.modeling of non-dropout
-                  r = exp(rnorm(n))*10 # total read counts in each cell
+                  r = exp(rnorm(n)) # total read counts in each cell
                   b1 = rnorm(1, mean = Nu1, sd = Sigma) # batch effect in batch 1
                   b2 = rnorm(1, mean = Nu2, sd = Sigma) # batch effect in batch 2
                   b = c(rep(b1, n/2), rep(b2, n/2))
