@@ -13,7 +13,7 @@ data_all <- as.matrix(raw.data)
 #bio.group <- c(rep(1,250), rep(2,350),rep(3,400),rep(1,300),rep(2,350),rep(3,350))
 bio.group <- c(rep(1,100))
 #batch.info <- c(rep(1,27),rep(2,8),rep(1,10),rep(2,9))
-batch.info <- c(rep(1,100))
+batch.info <- c(rep(1,50),rep(2,50))
 #total.count <- apply(new.processed.data[,3:56],2,sum)
 total.count <- apply(raw.data[,1:100],2,sum)
 #Y <- as.matrix(data_all[,c(3:56)])
@@ -37,7 +37,7 @@ source('/Users/kexuanliang/documents/singlecell/git/scRNA-dropouts/fitDABB_funct
 results <- fitDABB(Y, total.count, batch.info, bio.group, gene_length, tech_para)
 write.table(results, paste0('/Users/kexuanliang/documents/singlecell/simulation/alterA.result/0/',i,'.txt'), 
             quote = F, col.names = F, row.names = F)
-parameters <- rbind(parameters,cbind(results$nu,results$sigma2,results$coef))
+parameters <- cbind(parameters,rbind(results$nu,results$sigma2,results$coef))
 }
 
 para<-data.frame(t(as.matrix(parameters)))

@@ -3,9 +3,11 @@ rm(list=ls())
 set.seed(19720)
 
 # the number of genes
-p = 10000 
+p = 10000
+#p = 100
 # the number of cells, each batch contains half of the cells
 n = 2000 
+#n = 100
 #since genes we detect are fixed, so length of each gene is unchangable 
 l = exp(rnorm(p))*100 
 
@@ -62,9 +64,11 @@ for(j in 1:5){
                 #Y=Z*matrix(rpois(n*p, as.vector(Lambda)), n, p)
                 Y = Z*matrix(rpois(p*n, as.vector(Lambda)), p, n)
                 Y = cbind(Y,l)
-        #  write.table(Y, paste0('/Users/kexuanliang/documents/singlecell/simulation/alterC/C', C, '/read', j, '.txt'), 
-        #              quote = F, col.names = F, row.names = F)
+          #write.table(Y, paste0('/Users/kexuanliang/documents/singlecell/simulation/alterC/', C, '/read', i, '.txt'), 
+              #        quote = F, col.names = F, row.names = F)
         write.table(Y, paste0('/home/kl764/project/singlecell/simulation/alterC/',  C, '/read', i, '.txt'), 
-                    quote = F, col.names = F, row.names = F)      
+                    quote = F, col.names = F, row.names = F)  
+        write.table(Y, paste0('/home/kl764/project/singlecell/simulation/alterC/',  C, '/R', i, '.txt'), 
+                    quote = F, col.names = F, row.names = F)  
         }
 }

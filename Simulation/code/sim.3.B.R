@@ -3,9 +3,11 @@ rm(list=ls())
 set.seed(19720)
 
 # the number of genes
-p = 10000 
+p = 10000
+#p = 100
 # the number of cells, each batch contains half of the cells
 n = 2000 
+#n = 100
 #since genes we detect are fixed, so length of each gene is unchangable 
 l = exp(rnorm(p))*100 
 
@@ -75,8 +77,10 @@ for(j in 1:5){
                 Y = cbind(Y,l)
                 write.table(Y, paste0('/home/kl764/project/singlecell/simulation/alterB.ct/',  B, '/read', i, '.txt'), 
                             quote = F, col.names = F, row.names = F)
-                #file_name <- paste0('~/Desktop/simulation-data',B,'txt')
-                # write.table(Y[[B]],file_name)
+                write.table(Y, paste0('/home/kl764/project/singlecell/simulation/alterB.ct/',  B, '/R', i, '.txt'), 
+                            quote = F, col.names = F, row.names = F)
+               # write.table(Y, paste0('/Users/kexuanliang/documents/singlecell/simulation/alterB.ct/', B, '/read', i, '.txt'), 
+                   #         quote = F, col.names = F, row.names = F)
         }
         
 }
