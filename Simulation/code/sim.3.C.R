@@ -80,7 +80,7 @@ for(j in 1:5){
                 #            quote = F, col.names = F, row.names = F)
                 write.table(Y, paste0('/home/kl764/project/singlecell/simulation/alterC.ct/',  C, '/read', i, '.txt'), 
                            quote = F, col.names = F, row.names = F)
-                write.table(Y, paste0('/home/kl764/project/singlecell/simulation/alterC.ct/',  C, '/R', i, '.txt'), 
+                write.table(r, paste0('/home/kl764/project/singlecell/simulation/alterC.ct/',  C, '/R', i, '.txt'), 
                             quote = F, col.names = F, row.names = F)
         }
 
