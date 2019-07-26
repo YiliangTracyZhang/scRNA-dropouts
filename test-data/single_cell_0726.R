@@ -96,7 +96,6 @@ write.table(para1, paste0('/Users/kexuanliang/documents/singlecell/simulation/al
    quote = F, row.names = F)
 
 # visualize our result
-setwd('~/Documents/singlecell/simulation/alterA/result-0.2/')
 png(file="boxplot")
 p<-boxplot(para1)
 dev.off()
