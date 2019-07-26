@@ -97,8 +97,8 @@ write.table(para1, paste0('/Users/kexuanliang/documents/singlecell/simulation/al
 
 # visualize our result
 setwd('~/Documents/singlecell/simulation/alterA/result-0.2/')
-p<-boxplot(para1)
 png(file="boxplot")
+p<-boxplot(para1)
 dev.off()
 
 ###############
@@ -165,8 +165,8 @@ names(para2)<-c('nu1','nu2','sigsq1','sigsq2','gamma','alpha','beta','theta')
 write.table(para2, paste0('/Users/kexuanliang/documents/singlecell/simulation/alterA.ct/0.2/para-results.txt'), 
             quote = F, row.names = F)
 
-p<-boxplot(para2)
 png(file="boxplot")
+p<-boxplot(para2)
 dev.off()
 
 
