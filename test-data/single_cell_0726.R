@@ -33,6 +33,7 @@
 # input simulation data of [total count of cells] 
 setwd('~/Documents/singlecell/simulation/alterA/Rinfo-0.2/')
 count <- dir(path = '~/Documents/singlecell/simulation/alterA/Rinfo-0.2/', pattern = ".txt")
+count.table <- list()
 for( i in 1:length(count)){
         count.table[i] <- read.table(count[i], sep ='', header = F, as.is = T)
 }
@@ -45,21 +46,21 @@ parameters1 <-c()
 
 # fitting data into our model 
 for( i in 1:length(data)){
-        
+
         total.count <- as.numeric(unlist(count.table[i]))
         #total.count <- apply(raw.data[,1:100],2,sum)
         
         raw.data <- read.table(data[i], sep = '', header = F)
         
+        data_all <- as.matrix(raw.data)
+        
         gene_length <- as.numeric(as.vector(data_all[,101]))   
         
-        data_all <- as.matrix(raw.data)
-
         bio.group <- c(rep(1,100))
 
         batch.info <- c(rep(1,50),rep(2,50))
         
-        Y <- as.matrix(data_all[,c(1:200)])
+        Y <- as.matrix(data_all[,c(1:100)])
         G_num <- length(Y[,1])
         C_num <- length(Y[1,])
         Y <- matrix(as.numeric(Y), G_num, C_num)
@@ -81,20 +82,21 @@ for( i in 1:length(data)){
         
         results <- fitDABB(Y, total.count, batch.info, bio.group, gene_length, tech_para)
         
-        #write.table(results, paste0('/Users/kexuanliang/documents/singlecell/simulation/para-result/',i,'.txt'), 
-        #   quote = F, col.names = F, row.names = F)
+        write.table(results, paste0('/Users/kexuanliang/documents/singlecell/simulation/alterA/result-0.2/',i,'.txt'), 
+           quote = F)
         
-        parameters1 <- cbind(parameters,rbind(results$nu,results$sigma2,results$coef))
+        parameters1 <- cbind(parameters1,rbind(results$nu,results$sigma2,results$coef))
         
 }
 
 # store the parameter information into a data.frame
 para1<-data.frame(t(as.matrix(parameters1)))
 names(para1)<-c('nu1','nu2','sigsq1','sigsq2','gamma','alpha','beta','theta')
-write.table(para1, paste0('/Users/kexuanliang/documents/singlecell/simulation/alterA/0.2/para-results.txt'), 
+write.table(para1, paste0('/Users/kexuanliang/documents/singlecell/simulation/alterA/0/para-results.txt'), 
    quote = F, row.names = F)
 
 # visualize our result
+setwd('~/Documents/singlecell/simulation/alterA/result-0.2/')
 p<-boxplot(para1)
 png(file="boxplot")
 dev.off()
@@ -112,6 +114,7 @@ dev.off()
 
 setwd('~/Documents/singlecell/simulation/alterA.ct/Rinfo-0.2/')
 count <- dir(path = '~/Documents/singlecell/simulation/alterA.ct/Rinfo-0.2/', pattern = ".txt")
+count.table <- list()
 for( i in 1:length(count)){
         count.table[i] <- read.table(count[i], sep ='', header = F, as.is = T)
 }
@@ -128,9 +131,10 @@ for( i in 1:length(data)){
         total.count <- as.numeric(unlist(count.table[i]))
         #total.count <- apply(raw.data[,1:200],2,sum)
         
+        gene_length <- as.numeric(as.vector(data_all[,201]))
+        
         data_all <- as.matrix(raw.data)
         
-        gene_length <- as.numeric(as.vector(data_all[,201]))
         
         bio.group <- c(rep(1,25), rep(2,35),rep(3,40),rep(1,30),rep(2,35),rep(3,35))
         
@@ -150,10 +154,10 @@ for( i in 1:length(data)){
      
         results <- fitDABB(Y, total.count, batch.info, bio.group, gene_length, tech_para)
         
-        #write.table(results, paste0('/Users/kexuanliang/documents/singlecell/simulation/para-result/',i,'.txt'), 
+        #write.table(results, paste0('/Users/kexuanliang/documents/singlecell/simulation/alterA.ct/0.2-result/',i,'.txt'), 
         #   quote = F, col.names = F, row.names = F)
         
-        parameters2 <- cbind(parameters,rbind(results$nu,results$sigma2,results$coef))
+        parameters2 <- cbind(parameters2,rbind(results$nu,results$sigma2,results$coef))
 }
 
 para2<-data.frame(t(as.matrix(parameters2)))
