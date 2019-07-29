@@ -7,10 +7,10 @@ fitDABB <- function(Y, tot_read, bat_ind, bio_ind, gene_len, tech_para){
 #X tech_para: well, i still dont know how to set these technical parameters for MH algorithm
         
 ##X the following part aims to solve GLM
-  G_num <- length(Y[ ,1])
-  C_num <- length(Y[1, ])
-  bat_num <- max(bat_ind)
-  bio_num <- max(bio_ind)
+  G_num <- nrow(Y)
+  C_num <- ncol(Y)
+  bat_num <- length(unique(bat_ind))
+  bio_num <- length(unique(bio_ind))
 
   Y_binary <- ifelse(Y > 0, 1, 0)
   bat_mat <- c()
