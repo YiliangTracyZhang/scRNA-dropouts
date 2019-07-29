@@ -6,8 +6,9 @@ set.seed(19720)
 p = 10000
 #p = 100
 # the number of cells, each batch contains half of the cells
-n = 2000 
+#n = 2000 
 #n = 100
+n = 1000
 #since genes we detect are fixed, so length of each gene is unchangable 
 l = exp(rnorm(p))*100 
 
@@ -47,9 +48,9 @@ for(j in 1:5){
         for(i in 1:100){
                 # 1.modeling of non-dropout
                 r = exp(rnorm(n))*10 # total read counts in each cell
-                b1 = rnorm(1, mean = Nu1, sd = Sigma) # batch effect in batch 1
-                b2 = rnorm(1, mean = Nu2, sd = Sigma) # batch effect in batch 2
-                b = c(rep(b1, n/2), rep(b2, n/2))
+                b1 = rnorm(n/2, mean = Nu1, sd = Sigma) # batch effect in batch 1
+                b2 = rnorm(n/2, mean = Nu2, sd = Sigma) # batch effect in batch 2
+                b = c(b1, b2)
                 exp.b = c(rep(exp(b1), n/2), rep(exp(b2), n/2)) # exponential batch effect in each cell
                 #  Lambda=(mu*l*b) %*% t(l) 
                 # Lambda = (mu*l) %*% t(r*exp.b) # non-dropout read count

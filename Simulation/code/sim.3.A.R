@@ -6,8 +6,9 @@ set.seed(19720)
 p = 10000
 #p = 100
 # the number of cells, each batch contains half of the cells
-n = 2000 
-#n = 100
+#n = 2000 
+#n = 200
+n = 1000
 #since genes we detect are fixed, so length of each gene is unchangable 
 l = exp(rnorm(p))*100 
 
@@ -47,18 +48,24 @@ for(j in 1:5){
         for(i in 1:100){
                 # 1.modeling of non-dropout
                 r = exp(rnorm(n))# total read counts in each cell
-                b1 = rnorm(1, mean = Nu1, sd = Sigma) # batch effect in batch 1
-                b2 = rnorm(1, mean = Nu2, sd = Sigma) # batch effect in batch 2
-                b = c(rep(b1, n/2), rep(b2, n/2))
+                b1 = rnorm(n/2, mean = Nu1, sd = Sigma) # batch effect in batch 1
+                b2 = rnorm(n/2, mean = Nu2, sd = Sigma) # batch effect in batch 2
+                b = c(b1, b2)
                 exp.b = c(rep(exp(b1), n/2), rep(exp(b2), n/2)) # exponential batch effect in each cell
                 #  Lambda=(mu*l*b) %*% t(l) 
                 # Lambda = (mu*l) %*% t(r*exp.b) # non-dropout read count
-                lam1 = (mu1*l) %*% t((r*exp.b)[1:250]) 
-                lam2 = (mu2*l) %*% t((r*exp.b)[251:600]) 
-                lam3 = (mu3*l) %*% t((r*exp.b)[601:1000]) 
-                lam4 = (mu1*l) %*% t((r*exp.b)[1001:1300]) 
-                lam5 = (mu2*l) %*% t((r*exp.b)[1301:1650]) 
-                lam6 = (mu3*l) %*% t((r*exp.b)[1651:2000]) 
+               # lam1 = (mu1*l) %*% t((r*exp.b)[1:250]) 
+               # lam2 = (mu2*l) %*% t((r*exp.b)[251:600]) 
+               # lam3 = (mu3*l) %*% t((r*exp.b)[601:1000]) 
+               # lam4 = (mu1*l) %*% t((r*exp.b)[1001:1300]) 
+               # lam5 = (mu2*l) %*% t((r*exp.b)[1301:1650]) 
+               # lam6 = (mu3*l) %*% t((r*exp.b)[1651:2000]) 
+                lam1 = (mu1*l) %*% t((r*exp.b)[1:25]) 
+                lam2 = (mu2*l) %*% t((r*exp.b)[26:60]) 
+                lam3 = (mu3*l) %*% t((r*exp.b)[61:100]) 
+                lam4 = (mu1*l) %*% t((r*exp.b)[101:130]) 
+                lam5 = (mu2*l) %*% t((r*exp.b)[131:165]) 
+                lam6 = (mu3*l) %*% t((r*exp.b)[166:200]) 
                 Lambda <- cbind(lam1,lam2,lam3,lam4,lam5,lam6)
                 
                 # 2.modeling of dropout effect
@@ -75,9 +82,11 @@ for(j in 1:5){
                 #Y=Z*matrix(rpois(n*p, as.vector(Lambda)), n, p)
                 Y = Z*matrix(rpois(p*n, as.vector(Lambda)), p, n)
                 Y = cbind(Y,l)
-                # write.table(Y, paste0('/Users/kexuanliang/documents/singlecell/simulation/alterA.ct/', A, '/read', i, '.txt'), 
-                        #    quote = F, col.names = F, row.names = F)
-                write.table(Y, paste0('/home/kl764/project/singlecell/simulation/alterA.ct/',  A, '/read', i, '.txt'), 
+               #  write.table(Y, paste0('/Users/kexuanliang/documents/singlecell/simulation/alterA.ct/', A, '/read', i, '.txt'), 
+                #            quote = F, col.names = F, row.names = F)
+                # write.table(r, paste0('/Users/kexuanliang/documents/singlecell/simulation/alterA.ct/', A, '/R', i, '.txt'), 
+                #             quote = F, col.names = F, row.names = F)
+               write.table(Y, paste0('/home/kl764/project/singlecell/simulation/alterA.ct/',  A, '/read', i, '.txt'), 
                             quote = F, col.names = F, row.names = F)
                 write.table(r, paste0('/home/kl764/project/singlecell/simulation/alterA.ct/',  A, '/R', i, '.txt'), 
                             quote = F, col.names = F, row.names = F)

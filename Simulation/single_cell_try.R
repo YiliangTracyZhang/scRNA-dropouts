@@ -1,148 +1,210 @@
-#Read the data, we use deng's data as a test of our method.
-#data_all <- as.matrix(new.processed.data)
-#Scenario = args[1]
-#raw.data <- read.table('/home/kl764/project/singlecell/simulation/alterA/0.1/read1.txt', sep = '', header = F)
-setwd('~/Documents/singlecell/simulation/alterA/0/')
-data <- dir(path = '~/Documents/singlecell/simulation/alterA/0/', pattern = ".txt")
-parameters<-c()
-for( i in 1:length(data)){
-raw.data<- read.table(data[i], sep = '', header = F)
+fitDABB <- function(Y, tot_read, bat_ind, bio_ind, gene_len, tech_para){
+        G_num <- length(Y[ ,1])
+        C_num <- length(Y[1, ])
+        # former part seems to overlap with singlecell.R
+        bat_num <- max(bat_ind)
+        bio_num <- max(bio_ind)
+        
+        Y_binary <- ifelse(Y > 0, 1, 0)
+        bat_mat <- c()
+        for (i in 1:bat_num){
+                bat_mat <- cbind(bat_mat, ifelse(bat_ind == i, 1, 0))
+        }
+        bat_cellnum <- colSums(bat_mat)
+        bio_mat <- c()
+        for (i in 1:bio_num){
+                bio_mat <- cbind(bio_mat, ifelse(bio_ind == i, 1, 0))
+        }
+        
+        RL_mat <- gene_len %*% t(tot_read) / 10^9
+       # RL_mat <- gene_len %*% t(tot_read) 
+        # adjustment of RL_mat/tot_read/gene_len may not be necessary in simulation data
+        
+        lnR_vec <- c()
+        for (i in 1:C_num){
+                 lnR_vec <- c(lnR_vec, rep(log(tot_read[i] / 10^6), G_num))
+                #lnR_vec <- c(lnR_vec, rep(log(tot_read[i] ), G_num))
+        }
+         lnL_vec <- rep(log(gene_len / 10^3), C_num)
+        # lnL_vec <- rep(log(gene_len ), C_num)
+        
+        Design_mat <- cbind(rep(1, G_num * C_num), lnR_vec, lnL_vec) # G*C,3
+        Design_cov <- t(Design_mat) %*% Design_mat # 3*3
+        
+        iter_num <- tech_para$iternum
+        max_error <- tech_para$error
+        MH_num <- tech_para$mhnum
+        sig_jump <- tech_para$jump
+        dec_rate <- tech_para$jump_rate
+        burn_num <- tech_para$burnin
+        sample_num <- MH_num - burn_num
+        
+        iter <- 0
+        loglike_old <- 1
+        nu_Bat_old <- 0
+        error <- 1
+        ##sigma2_Bat_old <- 1
+        
+        #initial value
+        nu_Bat <- rep(0, bat_num)
+        sigma2_Bat <- rep(1, bat_num)
+        coef <- c(0, 0.1, 0.1, 1)
+        mu_mat <- mu_update(Y, bio_mat, RL_mat, matrix(1, G_num, C_num), rep(1, C_num))
+        
+        while (iter < iter_num & error > max_error){
+                iter <- iter + 1
+                #E-step
+                if (iter > 1 & iter < 3){
+                        sig_jump <- dec_rate * sig_jump
+                }
+                
+                b_sample_mat <- c()
+                loglike_mat <- c()
+                expect_eta <- 0
+                expect_eta_b <- 0
+                p_weight <- 0
+                Phi_mat <- 0
+                ##loglike_all <- 0
+                jump_mat <- c()
+                
+                b_old <- rnorm(C_num, as.vector(bat_mat %*% nu_Bat), 
+                               as.vector(bat_mat %*% sigma2_Bat^0.5))
+                lst_post_old <- b_post_loglike(Y, b_old, mu_mat, bio_mat, RL_mat, Y_binary,
+                                               coef, Design_mat, bat_mat, nu_Bat, sigma2_Bat)
+                #loglike1 = loglike_cell + b_loglike_vec, loglike2 = loglike_cell, 
+                #etaexpect = expect_eta, pmat = p_weight, Phimat = p_nodrop_mat,
+                #loglikemat = loglike_mat
+                log_post_old <- lst_post_old$loglike1
+                
+                log_post_bii <- lst_post_old$loglike2
+                p_weightii <- lst_post_old$pmat
+                expect_etaii <- lst_post_old$etaexpect
+                Phi_matii <- lst_post_old$Phimat
+                ##loglike_allii <- lst_post_old$loglikemat
+                
+                for (ii in 1:MH_num){
+                        #Metropolis-Hasting
+                        b_new <- rnorm(C_num, b_old, rep(sig_jump, C_num))
+                        lst_post_new <- b_post_loglike(Y, b_new, mu_mat, bio_mat, RL_mat, Y_binary,
+                                                       coef, Design_mat, bat_mat, nu_Bat, sigma2_Bat)
+                        log_post_new <- lst_post_new$loglike1
+                        log_post_diff <- log_post_new - log_post_old
+                        r <- ifelse(log_post_diff >= 0, 1, exp(log_post_diff))
+                        unif <- runif(C_num)
+                        b_old <- ifelse(r > unif, b_new, b_old)
+                        log_post_old <- ifelse(r > unif, log_post_new, log_post_old)
+                        jump_vec <- as.vector(ifelse(r > unif, 1, 0)) # what this means
+                        jump_mat <- cbind(jump_mat, jump_vec)
+                        Phi_matii <- t((1 - jump_vec) * t(Phi_matii) + jump_vec * t(lst_post_new$Phimat))
+                        log_post_bii <- (1 - jump_vec) * log_post_bii + jump_vec * lst_post_new$loglike2
+                        p_weightii <- t((1 - jump_vec) * t(p_weightii) + jump_vec * t(lst_post_new$pmat))
+                        expect_etaii <- t((1 - jump_vec) * t(expect_etaii) +
+                                                  jump_vec * t(lst_post_new$etaexpect))
+                        ##loglike_allii <- t((1 - jump_vec) * t(loglike_allii) +
+                        ##                   jump_vec * t(lst_post_new$loglikemat))
+                        
+                        #Monte Carlo
+                        if (ii > burn_num){
+                                # not mean()?
+                                b_sample_mat <- cbind(b_sample_mat, b_old)
+                                expect_eta <- expect_eta + expect_etaii
+                                expect_eta_b <- expect_eta_b + t(t(expect_etaii) * as.vector(b_old))
+                                p_weight <- p_weight + p_weightii
+                                loglike_mat <- cbind(loglike_mat, log_post_bii)
+                                Phi_mat <- Phi_mat + Phi_matii
+                                ##loglike_all <- loglike_all + loglike_allii
+                        }
+                }
+                expect_b <- rowMeans(b_sample_mat)
+                expect_expb <- rowMeans(exp(b_sample_mat))
+                expect_b2 <- rowMeans(b_sample_mat^2)
+                expect_eta <- expect_eta / sample_num
+                expect_eta_b <- expect_eta_b / sample_num
+                p_weight <- p_weight / sample_num
+                loglike_vec <- rowMeans(loglike_mat)
+                loglike_new <- sum(loglike_vec)
+                Phi_mat <- Phi_mat / sample_num
+                ##loglike_all <- loglike_all / sample_num
+                
+                print('mean_jump_mat',mean(jump_mat))
+                
+                #M-step
+                mu_mat <- mu_update(Y, bio_mat, RL_mat, p_weight, expect_expb)
+                A1_12 <- t(Design_mat) %*% as.vector(rep(1, G_num) %*% t(expect_b))
+                A1_22 <- G_num * sum(expect_b2)
+                A1 <- cbind(rbind(Design_cov, t(A1_12)), rbind(A1_12, A1_22))
+                A2 <- rbind(t(Design_mat) %*% as.matrix(as.vector(expect_eta)), 
+                            sum(expect_eta_b)) 
+                coef <- solve(A1) %*% A2
+                expect_b_shift <- expect_b - mean(expect_b)
+                
+                nu_Bat <- (t(bat_mat) %*% expect_b_shift) / bat_cellnum
+                sigma2_Bat <- (t(bat_mat) %*% ((expect_b - bat_mat %*% nu_Bat)^2)) / bat_cellnum
+                
+                print(c('iteration',iter,'new_log_like', loglike_new))
+                
+                error1 <- abs((loglike_new - loglike_old) / (loglike_old + 1))
+                loglike_old <- loglike_new
+                error2 <- 1e3 * mean((nu_Bat - nu_Bat_old)^2 / (nu_Bat_old + 1))
+                nu_Bat_old <- nu_Bat
+                error <- min(error1, error2)
+                ##print(c(error1, error2))
+        }
+        ##loglike_gene <- rowSums(loglike_all)
+        return(list(nu = nu_Bat, sigma2 = sigma2_Bat, mu = mu_mat, bsample = b_sample_mat, 
+                    pweight = p_weight, coef = coef, eta = expect_eta, Phi = Phi_mat))
+}
+
+#update functions
+
+mu_update <- function(Y, bio_mat, RL_mat, p_weight, exp_b){
+        return((p_weight * Y) %*% bio_mat / (t(t(p_weight * RL_mat) * exp_b) %*% bio_mat))
+}
+
+b_post_loglike <- function(Y, b_vec, mu_mat, bio_mat, RL_mat, Y_binary,
+                           coef, Design_mat, bat_mat, nu_Bat, sigma2_Bat){
+        G_num <- length(Y_binary[,1])
+        C_num <- length(Y_binary[1,])
+        lambda_mat <- t(t(mu_mat %*% t(bio_mat) * RL_mat) * exp(b_vec))
+        eta_mean_vec <- as.vector(cbind(Design_mat, b_vec) %*% coef)
+        eta_mean <- matrix(eta_mean_vec, G_num, C_num)
+        p_nodrop_mat <- matrix(pnorm(eta_mean_vec), G_num, C_num)
+        zero_poisson <- p_nodrop_mat * (1 - Y_binary) * exp(-lambda_mat)
+        zero_prob <- zero_poisson + (1 - p_nodrop_mat) * (1 - Y_binary)
+        loglike_mat <- Y * log((1e-10) + lambda_mat) - lambda_mat * Y_binary + 
+                log(p_nodrop_mat * Y_binary + zero_prob) 
+        loglike_cell <- colSums(loglike_mat)
+        b_loglike_vec <- - 1 / (2 * bat_mat %*% sigma2_Bat) * (b_vec - bat_mat %*% nu_Bat)^2
+        p_weight <- Y_binary + zero_poisson / (zero_prob + Y_binary) 
+        phi_mat <- dnorm(eta_mean) 
+        expect_eta <- eta_mean + p_weight * phi_mat / p_nodrop_mat - 
+                (1 - p_weight) * phi_mat / (1 - p_nodrop_mat)
+        return(list(loglike1 = loglike_cell + b_loglike_vec, loglike2 = loglike_cell, 
+                    etaexpect = expect_eta, pmat = p_weight, Phimat = p_nodrop_mat,
+                    loglikemat = loglike_mat))
+}
+
+#####################################
+##read data, we use alpha=0.1 here##
+#####################################
+
+raw.data <- read.table('/home/kl764/project/singlecell/simulation/alterA/0.1/read1.txt', sep = '', header = F)
 data_all <- as.matrix(raw.data)
-#head(data_all)
-#bio.group <- c(rep(1,35), rep(2,19))
-#bio.group <- c(rep(1,250), rep(2,350),rep(3,400),rep(1,300),rep(2,350),rep(3,350))
-bio.group <- c(rep(1,100))
-#batch.info <- c(rep(1,27),rep(2,8),rep(1,10),rep(2,9))
-batch.info <- c(rep(1,50),rep(2,50))
-#total.count <- apply(new.processed.data[,3:56],2,sum)
-total.count <- apply(raw.data[,1:100],2,sum)
-#Y <- as.matrix(data_all[,c(3:56)])
-Y <- as.matrix(data_all[,c(1:100)])
+bio.group <- c(rep(1,2000))
+batch.info <- c(rep(1,1000),rep(2,1000))
+#total.count <- apply(raw.data[,1:2000],2,sum)
+count.table <- read.table('/home/kl764/project/singlecell/simulation/alterA/0.1/R1.txt', sep = '', header = F)
+total.count <- as.numeric(unlist(count.table))
+gene_length <- as.numeric(as.vector(data_all[,2001]))
+Y <- as.matrix(data_all[,c(1:2000)])
 G_num <- length(Y[,1])
 C_num <- length(Y[1,])
 Y <- matrix(as.numeric(Y), G_num, C_num)
-gene_length <- as.numeric(as.vector(data_all[,101]))
 
 tech_para <- list(iternum = 100, error = 1e-5, mhnum = 300, jump_rate = 0.15,
                   jump = 0.03, burnin = 50)
-#source('/home/kl764/project/singlecell/git/scRNA-dropouts/fitDABB_function.R')
-source('/Users/kexuanliang/documents/singlecell/git/scRNA-dropouts/fitDABB_function.R')
-#fit the model:
-#Y is the G*C read count matrix, total.count is a vector of each cell's total read counts,
-#batch.info is a vector, the index of the batch each cell belongs to, bio.group is a 
-#vector, the index of the biological group each cell belongs to, gene_length is a vector,
-#length of each RNA, and tech_para is a group of parameters that are used to fit the model.
-#Among these parameters, jump_rate and jump are used to control the acceptance rate of 
-#Metropolis-Hasting alogrithm. A recommanded rate ranges from 0.2 to 0.45.
+# source('/home/kl764/project/singlecell/git/scRNA-dropouts/fitDABB_function.R')
+
 results <- fitDABB(Y, total.count, batch.info, bio.group, gene_length, tech_para)
-write.table(results, paste0('/Users/kexuanliang/documents/singlecell/simulation/alterA.result/0/',i,'.txt'), 
-            quote = F, col.names = F, row.names = F)
-parameters <- cbind(parameters,rbind(results$nu,results$sigma2,results$coef))
-}
-
-para<-data.frame(t(as.matrix(parameters)))
-names(para)<-c('nu','sigma2','gamma','alpha','beta','batch.effect')
-p<-boxplot(para)
-#library(ggplot2)
-#a1.coef <- data.frame(1, 1:100, results$coef)
-#Qualtiy Control, alternative hypothesis can be chosen as 'left', 'right' and 'two side'.
-#DABB_QC(results, alternative = 'right')
-#refit after deleting outliers
-#results.qc <- fitDABB(Y[,-c(22, 33, 35)], total.count[-c(22, 33, 35)], batch.info[-c(22, 33, 35)], bio.group[-c(22, 33, 35)], 
- #                 gene_length, tech_para)
-#Differential Expression
-#pvl <- DABB_DE(Y[,-c(22, 33, 35)], total.count[-c(22, 33, 35)], bio.group[-c(22, 33, 35)], gene_len = gene_length, results.qc, 
- #                sample_num = 200)
-
-#sort(pvl$p.value, index.return = T)
-#sort(p.adjust(pvl$p.value))
-
-#Visualization, method can be chosen as 'PCA' and 'ISOmap'
-#library(ggplot2)
-#library(vegan)
-#visual <- DABB_visualize(Y[,-c(22,33,35)], total.count[-c(22,33,35)], gene_length, results$pweight,
-#                        results$bsample, method = 'PCA', k = 10)
-#visual <- DABB_visualize(Y[,-c(22,33,35)], total.count[-c(22,33,35)], gene_length, results.qc$pweight,
-                     #   results.qc$bsample, method = 'PCA', k = 10)
-##visual <- visual$points
-#pc1 <- visual[,1]
-#pc2 <- visual[,2]
-#pc1.16.88 <- pc1[1:26]# cell 22 is deleted after quality control
-
-#pc1.16.193 <- pc1[27:32]# cell 33 and 35 are deleted after quality control
-
-#pc1.8.88 <- pc1[33:42]
-
-#pc1.8.193 <- pc1[43:51]
-
-#pc2.16.88 <- pc2[1:26]# cell 22 is deleted after quality control
-
-#pc2.16.193 <- pc2[27:32]# cell 33 and 35 are deleted after quality control
-
-#pc2.8.88 <- pc2[33:42]
-
-#pc2.8.193 <- pc2[43:51]
-        
-#p <- ggplot()
-#p <- p + geom_point(data=data.frame(pc1.16.88, pc2.16.88), aes(x=pc1.16.88, y=pc2.16.88, color="16cell", shape='run0088'), size=3)
-#p <- p + geom_point(data=data.frame(pc1.16.193, pc2.16.193), aes(x=pc1.16.193, y=pc2.16.193, color="16cell",shape='run00193'), size=3)
-#p <- p + geom_point(data=data.frame(pc1.8.88, pc2.8.88), aes(x=pc1.8.88, y=pc2.8.88, color="8cell",shape='run0088'), size=3)
-#p <- p + geom_point(data=data.frame(pc1.8.193, pc2.8.193), aes(x=pc1.8.193, y=pc2.8.193, color="8cell",shape='run00193'), size=3)
-#p <- p + ggtitle('PC1 and PC2 for 16cell and 8cell in two batches')
-#p1 <- ggplot()
-#p1 <- p1 + geom_point(data=data.frame(pc1.16.88, pc2.16.88), aes(x=pc1.16.88, y=pc2.16.88, color="16cell", shape='run0088'), size=3)
-#p1 <- p1 + geom_point(data=data.frame(pc1.16.193, pc2.16.193), aes(x=pc1.16.193, y=pc2.16.193, color="16cell",shape='run00193'), size=3)
-#p1 <- p1 + geom_point(data=data.frame(pc1.8.88, pc2.8.88), aes(x=pc1.8.88, y=pc2.8.88, color="8cell",shape='run0088'), size=3)
-#p1 <- p1 + geom_point(data=data.frame(pc1.8.193, pc2.8.193), aes(x=pc1.8.193, y=pc2.8.193, color="8cell",shape='run00193'), size=3)
-#p1 <- p1 + ggtitle('PC1 and PC2 for 16cell and 8cell in two batches')
-####################################################################
-#Visualization of the unfitted data.
-#G_num <- length(Y[,1])
-#C_num <- length(Y[1,])
-#sample_num <- length(results$bsample[1,])
-#visual <- DABB_visualize(Y, total.count, gene_length, matrix(1, G_num, C_num),
-                       #  b_sample_mat = matrix(0, C_num, sample_num), method = 'PCA', k = 10)
-##visual <- visual$points
-#pc1 <- visual[,1]
-#pc2 <- visual[,2]
-#pc1.16.88 <- pc1[1:27]
-#pc1.16.193 <- pc1[28:35]
-#pc1.8.88 <- pc1[36:45]
-#pc1.8.193 <- pc1[46:54]
-#pc2.16.88 <- pc2[1:27]
-#pc2.16.193 <- pc2[28:35]
-#pc2.8.88 <- pc2[36:45]
-#pc2.8.193 <- pc2[46:54]
-
-#p <- ggplot()
-#p <- p + geom_point(data=data.frame(pc1.16.88, pc2.16.88), aes(x=pc1.16.88, y=pc2.16.88, color="16cell", shape='run0088'), size=3)
-#p <- p + geom_point(data=data.frame(pc1.16.193, pc2.16.193), aes(x=pc1.16.193, y=pc2.16.193, color="16cell",shape='run00193'), size=3)
-#p <- p + geom_point(data=data.frame(pc1.8.88, pc2.8.88), aes(x=pc1.8.88, y=pc2.8.88, color="8cell",shape='run0088'), size=3)
-#p <- p + geom_point(data=data.frame(pc1.8.193, pc2.8.193), aes(x=pc1.8.193, y=pc2.8.193, color="8cell",shape='run00193'), size=3)
-#p <- p + ggtitle('PC1 and PC2 for 16cell and 8cell in two batches')
-
-
-#Visualization of the unfitted data.
-#G_num <- length(Y[,1])
-#C_num <- length(Y[1,])
-#sample_num <- length(results$bsample[1,])
-#visual <- DABB_visualize(Y, total.count, gene_length, matrix(1, G_num, C_num),
-                        # b_sample_mat = matrix(0, C_num, sample_num), method = 'PCA', k = 10)
-##visual <- visual$points
-#pc1 <- visual[,1]
-#pc2 <- visual[,2]
-#pc1.16.88 <- pc1[1:27]
-#pc1.16.193 <- pc1[28:35]
-#pc1.8.88 <- pc1[36:45]
-#pc1.8.193 <- pc1[46:54]
-#pc2.16.88 <- pc2[1:27]
-#pc2.16.193 <- pc2[28:35]
-#pc2.8.88 <- pc2[36:45]
-#pc2.8.193 <- pc2[46:54]
-
-#p <- ggplot()
-#p <- p + geom_point(data=data.frame(pc1.16.88, pc2.16.88), aes(x=pc1.16.88, y=pc2.16.88, color="16cell", shape='run0088'), size=3)
-#p <- p + geom_point(data=data.frame(pc1.16.193, pc2.16.193), aes(x=pc1.16.193, y=pc2.16.193, color="16cell",shape='run00193'), size=3)
-#p <- p + geom_point(data=data.frame(pc1.8.88, pc2.8.88), aes(x=pc1.8.88, y=pc2.8.88, color="8cell",shape='run0088'), size=3)
-#p <- p + geom_point(data=data.frame(pc1.8.193, pc2.8.193), aes(x=pc1.8.193, y=pc2.8.193, color="8cell",shape='run00193'), size=3)
-#p <- p + ggtitle('PC1 and PC2 for 16cell and 8cell in two batches')
+write.table( results, paste0(('/home/kl764/project/singlecell/simulation/alterA/try-result.txt'), quote = F))
+             
