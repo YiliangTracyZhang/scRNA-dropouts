@@ -1,0 +1,81 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage{graphicx}
+\usepackage{geometry}
+\geometry{a4paper,left=2cm,right=2cm}
+\usepackage{float}
+\usepackage{amsmath}
+\usepackage{multirow}
+\usepackage{amssymb}
+\usepackage{caption}
+\usepackage{booktabs}
+\usepackage{algorithm,algorithmic,blindtext}
+\setlength{\columnsep}{1cm}
+\usepackage{listings,xcolor}
+\lstset{numbers=left, numberstyle=\scriptsize, basicstyle=\tt , keywordstyle=\color{blue}, commentstyle=\color[cmyk]{1,0,1,0}, frame=shadowbox,
+        rulesepcolor=\color{red!20!green!20!blue!20}, extendedchars=false, xleftmargin=1.5em, xrightmargin=0.5em, tabsize=4}
+\bibliographystyle{abbrv}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\var}{var}
+\begin{document}
+  \title{\bf \sffamily A Framework for Single Cell RNA Sequencing Data Analysis}
+  \author{Molei Liu$^1$, Yue Li$^1$, Yiliang Zhang$^{1,*}$, Hao Ge$^{2,3}$}
+
+\date{}\maketitle
+  $^1$School of Mathematical Science, Peking University, Beijing, China; $^2$Beijing International Center For Mathematical Research, Peking University, Beijing, China;$^3$ Biodynamic Optical Imaging Center, Peking University, Beijing, China
+\begin{abstract}
+\end{abstract}
+\section*{\sffamily Introduction}
+\section*{\sffamily Methods}
+\subsection*{\sffamily Modeling of observed count}
+We use Zero-inflated Poisson(ZIP) regression to model the scRNA-seq data. There is a indicator $Z_{cg}$ for gene $g$ in cell $c$ which suggests dropout event occurs if $Z_{cg} = 0$ and dropout does not occur if $Z_{cg} = 1$. We assume the read count of gene $g$ in cell $c$, $Y_{cg}$ subjects to a poisson distribution with parameter $\lambda_{cg}$ when dropout event does not occur, i.e. $Z_{cg} = 1$ while $Y_{cg}$ is zero when dropout event occurs, i.e. $Z_{cg} = 0$. So, our model for observed read count data can be write as:
+\begin{equation*}
+	Y_{cg} \sim \left\lbrace
+	\begin{matrix}
+	   Poisson(\lambda_{cg}) & (Z_{cg}=1);\\
+	   0 & (Z_{cg}=0).
+	\end{matrix}\right.
+\end{equation*}
+So that
+\begin{align*}
+P(Y_{cg} = 0) &= P(Z_{cg} = 0) + P(Z_{cg} = 1)\exp{(-\lambda_{cg})}\\
+P(Y_{cg} = k) &= P(Z_{cg} = 1)\frac{\lambda_{cg}^k}{k!}\exp{(-\lambda_{cg})}, k = 1, 2, \ldots.
+\end{align*}
+\subsection*{\sffamily Modeling of non-dropout}
+We use poisson distribution to approximate the non-dropout read count. $\lambda_{cg}$, the parameter of the poisson distribution, depends on the gene's true expression level, denoted by $\mu_{G(c)g}$. The function, $G(c): \mathrm{cell} \longrightarrow \mathrm{biological~ group}$, defines the map from cell to biological group. In other words, $\mu_{G(c)g}$ is the essential absolute molecule count level of biological group $G(c)$ for arbitrary gene $g$. Thus, $\lambda_{cg}$ can be written as:
+\begin{equation*}	
+\log(\lambda_{cg}) = \log(\mu_{G(c)g}) + \log(r_c) + \log(l_g) + b_c,
+\end{equation*}
+where the total read counts of cell $c$ is denoted by $r_c$ and the length of gene $g$ is denoted by $l_g$. We include total read counts and length of gene into account because the longer the gene is and the more read counts the cell is detected will lead to more read count for every gene of the cell, which is confounded with true expression level $\mu_{G(c)g}$. We add total read counts and gene length into our model in order to remove the confounded effect. $b_c$ is the batch effect of cell $c$. Motivated by \cite{Hicks2015On}, we assume that $\lambda_{cg}$ is proportional to $e^{b_c}$ in our model. $b_c$ also has impact on dropout rates and we will introduce it in the next section.
+\subsection*{\sffamily Modeling of dropout rates}
+For gene $g$ in cell $c$, let $Z_{cg}$ denotes the indicator for dropout. $Z_{cg}=1$ indicates dropout event does not occur for gene $g$ in cell $c$. We assume that $Z_{cg}$ is a random variable and subject to a Bernoulli distribution whose parameters are the following factors:(1)$r_c$, total read count in cell $c$; (2)$l_g$, length of gene $g$; (3)$B(c)$, batch of cell $c$; (4)$b_c$, batch effect for cell $c$, which is a cell specific covariate.
+	
+	We form a GLMM to jointly model these factors. To be specific, we can write the distribution of $Z_{cg}$ as:
+\begin{equation*}	
+Z_{cg}\sim Bernoulli\left(\Phi(\gamma+\alpha \log(r_c)+\beta \log(l_g)+\theta^T{\bf f}(b_c))\right),
+\end{equation*}
+	where ${\bf f}(\cdot)$ is a group of polynomial basis, i.e. $b_c, b_c^2, \ldots$, and $\Phi(\cdot)$ is the cumulative distribution function of standard normal distribution. $\{\alpha, \beta, \gamma, \theta^T\} \subset \Theta$ belongs to the set of coefficients for the model. The batch effect is captured by the random effect term $b_c\sim \mathcal{N} (\nu_{B(c)}, \sigma^2_{B(c)})$. $\nu_{B(c)}$ and $\sigma^2_{B(c)}$ are the mean and variance of the cell specific batch effect $b_c$ from batch $B(c)$ respectively. In other words, the $b_c$s of the cells in an identical batch are independently generated from a same normal distributed population with mean $\nu_{B(c)}$ and variance $\sigma^2_{B(c)}$. In addition, to ensure identifiability, we assume $\sum_{c}\nu_{B(c)}=0$.
+
+\subsection*{\sffamily Estimation of the coefficients}
+The number of parameters that can be estimated in the model depends on how we formulate the the polynomial basis of $b_c$. We cannot directly estimate the parameters with maximum likelihood estimation(MLE) since it's hard to maximize the log-likelihood for the model. The log-likelihood function can be found in the supplementary material for this article. The sum of exponentials and the random effect complicates the maximization of $L(\Theta;Y)$, which is the likelihood of the model.
+
+But suppose we knew which zeros came from dropout event and which came from the Poisson; that is, suppose we could observe $Z_{cg} = 1$ when $Y_{cg}$ is from the Poisson state and $Z_{cg} = 0$ when $Y_{cg}$ is from dropout event, zero state. What's more, if we also knew the random effect of the batch effect of all the cells, then the likelihood would change into a simple one(see the supplementary material of this article for details)
+\begin{equation*}
+L(\Theta; Y, \bf{Z}, \bf{b}) = L(\mu_{G(c),g}; \bf{Y}, \bf{Z}, \bf{b}) + L(\alpha, \beta, \gamma, \theta; \bf{Z}, \bf{b}) + G\cdot L(\nu_{B(c)}, \sigma^2_{B(c)}; \bf{b}) + r(Y, \bf{Z}, \bf{b}),
+\end{equation*}
+ where $\bf{Z}$ is the set of all the dropout indicators $Z_{cg}$ and $\bf{b}$ is the set of all the batch effect $b_c$. $r(Y, \bf{Z}, \bf{b})$ is the function with on relation with $\Theta$ which can be ignored in the procedure of MLE. $L(\mu_{G(c),g}; \bf{Y}, \bf{Z}, \bf{b})$ is the log-likelihood function when $\bf{Z}$ and $\bf{b}$ is known covariates for its response $Y$. $L(\alpha, \beta, \gamma, \theta; \bf{Z}, \bf{b})$ is the log-likelihood function when $\bf{b}$ is a known covariate for its response $\bf{Z}$. $L(\nu_{B(c)}, \sigma^2_{B(c)}\bf{b})$ is the log-likelihood function when $\bf{b}$ is the response of the parameters. The log-likelihood with complete data is easier to maximize than the log-likelihood with incomplete data because $L(\mu_{G(c),g}; \bf{Y}, \bf{Z}, \bf{b})$, $L(\alpha, \beta, \gamma, \theta; \bf{Z}, \bf{b})$ and $L(\nu_{B(c)}, \sigma^2_{B(c)}; \bf{b})$ can be maximized separately. So, we can implement EM algorithm\cite{Gupta2011Theory} to estimate the parameters.
+
+ With the EM algorithm, the incomplete log-likelihood is maximized iteratively by alternating between estimating log-likelihood by its posterior expectation (E step)under the current estimates of $\Theta$ and $Y$, then, given that the latent variable is removed by posterior expectation, maximizing the posterior expectation of the log-likelihood function whose dependent variable exclude the latent variables(M step). The algorithm stop when $\Theta$ converges. The estimates from the final iteration are the MLE's $\Theta$ for the log-likelihood.
+
+ However, since there are two latent variables, $\bf{Z}$ and $\bf{b}$, in this model, we cannot find the closure form solution of the joint posterior distribution of $\bf{Z}$ and $\bf{b}$. Meanwhile, the posterior expectation of log-likelihood is hard to be directly calculated because the complicated form of the complete data log-likelihood(see the supplementary material). These difficulties motivated us introduce \emph{data augmentation} and \emph{Monte-Carlo EM} into our framework.
+\\
+\\
+\bf{Data Augmentation.} 
+\\
+\\
+\bf{Monte-Carlo EM.}
+\section*{\sffamily Applications}
+\section*{\sffamily Discussion}
+
+\par
+\bibliography{references}
+\end{document}

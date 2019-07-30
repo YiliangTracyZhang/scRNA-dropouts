@@ -1,0 +1,127 @@
+\begin{thebibliography}{10}
+
+\bibitem{Alter2000Singular}
+O.~Alter, P.~O. Brown, and D.~Botstein.
+\newblock Singular value decompositin for genome-wide expression data
+  processing and modeling.
+\newblock {\em Proceedings of the National Academy of Sciences of the United
+  States of America}, 97(18):10101--6, 2000.
+
+\bibitem{anders2010differential}
+S.~Anders and W.~Huber.
+\newblock Differential expression analysis for sequence count data.
+\newblock {\em Genome biology}, 11(10):R106, 2010.
+
+\bibitem{Benito2004Adjustment}
+M.~Benito, J.~Parker, Q.~Du, J.~Wu, X.~Dong, C.~M. Perou, and J.~S. Marron.
+\newblock Adjustment of systematic microarray data bases.
+\newblock {\em Bioinformatics}, 20(1):105--114, 2004.
+
+\bibitem{deng2014single}
+Q.~Deng, D.~Ramsk{\"o}ld, B.~Reinius, and R.~Sandberg.
+\newblock Single-cell rna-seq reveals dynamic, random monoallelic gene
+  expression in mammalian cells.
+\newblock {\em Science}, 343(6167):193--196, 2014.
+
+\bibitem{Fisher1922On}
+R.~A. Fisher.
+\newblock On the interpretation of ¦Ö2from contingency tables, and the
+  calculation of p.
+\newblock {\em Journal of the Royal Statistical Society}, 85(1):87--94, 1922.
+
+\bibitem{Greenberg1995Understanding}
+E.~Greenberg.
+\newblock Understanding the metropolis-hastings algorithm.
+\newblock {\em American Statistician}, 49(4):327--335, 1995.
+
+\bibitem{Gupta2011Theory}
+M.~R. Gupta and Y.~Chen.
+\newblock {\em Theory and Use of the EM Algorithm}.
+\newblock Now Publishers Inc., 2011.
+
+\bibitem{Hicks2015On}
+S.~C. Hicks, M.~Teng, and R.~A. Irizarry.
+\newblock On the widespread and critical impact of systematic bias and batch
+  effects in single-cell rna-seq data.
+\newblock {\em Nordisk Medicin}, 94(1):32--41, 2015.
+
+\bibitem{jia2017accounting}
+C.~Jia, D.~Kelly, J.~Kim, M.~Li, and N.~Zhang.
+\newblock Accounting for technical noise in single-cell rna sequencing
+  analysis.
+\newblock {\em bioRxiv}, page 116939, 2017.
+
+\bibitem{Jia116939}
+C.~Jia, D.~Kelly, J.~Kim, M.~Li, and N.~Zhang.
+\newblock Accounting for technical noise in single-cell rna sequencing
+  analysis.
+\newblock {\em bioRxiv}, 2017.
+
+\bibitem{Johnson2007Adjusting}
+W.~E. Johnson, C.~Li, and A.~Rabinovic.
+\newblock Adjusting batch effects in microarray expression data using empirical
+  bayes methods.
+\newblock {\em Biostatistics}, 8(1):118--127, 2007.
+
+\bibitem{lambert1992zero}
+D.~Lambert.
+\newblock Zero-inflated poisson regression, with an application to defects in
+  manufacturing.
+\newblock {\em Technometrics}, 34(1):1--14, 1992.
+
+\bibitem{Lander1999Array}
+E.~S. Lander.
+\newblock Array of hope.
+\newblock {\em Nature Genetics}, 21(1 Suppl):3--4, 1999.
+
+\bibitem{Lee2014Covariance}
+J.~A. Lee, K.~K. Dobbin, and J.~Ahn.
+\newblock Covariance adjustment for batch effect in gene expression data.
+\newblock {\em Statistics in Medicine}, 33(15):2681--95, 2014.
+
+\bibitem{leek2010tackling}
+J.~T. Leek, R.~B. Scharpf, H.~C. Bravo, D.~Simcha, B.~Langmead, W.~E. Johnson,
+  D.~Geman, K.~Baggerly, and R.~A. Irizarry.
+\newblock Tackling the widespread and critical impact of batch effects in
+  high-throughput data.
+\newblock {\em Nature Reviews Genetics}, 11(10):733--739, 2010.
+
+\bibitem{leek2007capturing}
+J.~T. Leek and J.~D. Storey.
+\newblock Capturing heterogeneity in gene expression studies by surrogate
+  variable analysis.
+\newblock {\em PLoS Genet}, 3(9):e161, 2007.
+
+\bibitem{love2014moderated}
+M.~I. Love, W.~Huber, and S.~Anders.
+\newblock Moderated estimation of fold change and dispersion for rna-seq data
+  with deseq2.
+\newblock {\em Genome biology}, 15(12):550, 2014.
+
+\bibitem{Nielsen2002Molecular}
+T.~O. Nielsen, R.~B. West, S.~C. Linn, O.~Alter, M.~A. Knowling, J.~X.
+  O'Connell, S.~Zhu, M.~Fero, G.~Sherlock, and J.~R. Pollack.
+\newblock Molecular characterisation of soft tissue tumours: a gene expression
+  study.
+\newblock {\em Lancet}, 359(9314):1301--7, 2002.
+
+\bibitem{Reese2011A}
+S.~E. Reese, K.~J. Archer, T.~M. Therneau, E.~J. Atkinson, C.~M. Vachon, M.~D.
+  Andrade, J.~P.~A. Kocher, and J.~E. Eckelpassow.
+\newblock A new statistic for identifying batch effects in high-throughput
+  genomic data that uses guided principal component analysis.
+\newblock {\em Bioinformatics}, 29(22):2877--83, 2011.
+
+\bibitem{Shabalin2008Merging}
+A.~A. Shabalin, H.~Tjelmeland, C.~Fan, C.~M. Perou, and A.~B. Nobel.
+\newblock Merging two gene-expression studies via cross-platform normalization.
+\newblock {\em Bioinformatics}, 24(9):1154--1160, 2008.
+
+\bibitem{Greg1990A}
+G.~C.~G. Wei and M.~A. Tanner.
+\newblock A monte carlo implementation of the em algorithm and the poor man's
+  data augmentation algorithms.
+\newblock {\em Journal of the American Statistical Association},
+  85(411):699--704, 1990.
+
+\end{thebibliography}

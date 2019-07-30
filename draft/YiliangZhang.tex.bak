@@ -1,0 +1,247 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage{graphicx}
+\usepackage{geometry}
+\geometry{a4paper,left=2cm,right=2cm}
+\usepackage{float}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{epstopdf}
+\usepackage{multirow}
+\usepackage{amssymb}
+\usepackage{caption}
+\usepackage{booktabs}
+\usepackage{algorithm,algorithmic,blindtext}
+\setlength{\columnsep}{1cm}
+\usepackage{listings,xcolor}
+\lstset{numbers=left, numberstyle=\scriptsize, basicstyle=\tt , keywordstyle=\color{blue}, commentstyle=\color[cmyk]{1,0,1,0}, frame=shadowbox,
+        rulesepcolor=\color{red!20!green!20!blue!20}, extendedchars=false, xleftmargin=1.5em, xrightmargin=0.5em, tabsize=4}
+\bibliographystyle{abbrv}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\var}{var}
+\begin{document}
+  \title{\bf \sffamily A Framework for Single Cell RNA Sequencing Data Analysis}
+  \author{Molei Liu$^1$, Yue Li$^1$, Yiliang Zhang$^{1,*}$, Xiannian Zhang, Yiyan Huang, Hao Ge$^{2,3}$}
+
+\date{}\maketitle
+  $^1$School of Mathematical Science, Peking University, Beijing, China; $^2$Beijing International Center For Mathematical Research, Peking University, Beijing, China;$^3$ Biodynamic Optical Imaging Center, Peking University, Beijing, China
+\begin{abstract}
+High-throughput technologies are widely used, for example to assay genetic variants, gene and protein expression, and epigenetic modifications. Systematic errors, including batch effects, have been widely reported as a major challenge in high-throughput technologies. Even though some efforts have been made to remove such bias, seldom of the previous methods take the overdispersion of zero(which indicates dropout events) appeared in the single-cell RNA sequencing count data into consideration. However, the zero counts is supposed to have great relation with batch effects and gene expression level. In this article, we propose a framework for single-cell RNA sequencing data analysis based on zero-inflated poisson model which can account and adjust for batch effect with the information for gene expression level and dropout events.
+\end{abstract}
+\section*{\sffamily Introduction}
+High-throughput technologies are widely used, for example to assay genetic variants, gene and protein expression, and epigenetic modifications\cite{leek2010tackling}. Systematic errors, including batch effects, have been widely reported as a major challenge in high-throughput technologies. Batch effects occur because measurements are affected by laboratory conditions, reagent lots and personnel differences. This becomes a major problem when batch effects are correlated with an outcome of interest and lead to incorrect conclusions.
+
+\cite{Lander1999Array}, which is among the earliest microarray experiments, firstly observed batch effects. They describe batch effects by ``It's well known among aficionados that comparison of the 'same' experiment performed a few weeks apart reveals considerably wider variation than seen when a single sample is tested by repeated hybridization.'' After the concept of batch effect is introduced into the field, \cite{Alter2000Singular} proposed the first method to adjust for batch effects based on singular value decomposition(SVD). The SVD method is applied in \cite{Nielsen2002Molecular} to enlarge the total dataset from two different array sets on gene-expression patterns of soft tissue tumours. The first paper specific only on batch effect came out in 2004, before which the method to adjust batch effects are only SVD. This paper use DWD to adjust batch effects\cite{Benito2004Adjustment}.Johnson and Li propose a method based on empirical bayes\cite{Johnson2007Adjusting} and a method to detect whether there are batch effects in a data set was proposed in \cite{Reese2011A}. The methods to adjust for batch effects and technical bias are keeping been proposed in these year such as Surrogate Variable Analysis(SVA)\cite{leek2007capturing}, cross-platform normalization(XPN)\cite{Shabalin2008Merging} and covariance adjustment\cite{Lee2014Covariance}.
+
+Even though these efforts have been made to remove such bias, seldom of the previous methods take the overdispersion of zero(which indicates dropout events) appeared in the single-cell RNA sequencing count data into consideration. In \cite{Hicks2015On}, the author argues that proportion of detected gene is a major source of technical cell-to-cell noise. The author illustrate their points with examining data from five published studies. \cite{jia2017accounting} observed the effects brought by dropout event and proposed Toolkit for Analysis of Single Cell(TASC) model based on zero-inflated model\cite{lambert1992zero} by use of external RNA spike-in.They develop an empirical bayes procedure that borrows information across cells.
+
+In this article, we propose a framework for single-cell RNA sequencing data analysis also based on zero-inflated poisson model which can account and adjust for batch effect with the information for gene expression level and dropout events. Compared with \cite{jia2017accounting}, our model didn't use external spike-in whose quality is often considered to be affected by systematic bias. In addition, our method is more efficient in computation.
+
+In the following sections, we firstly introduce how to modeling the zero-inflated model and how to estimate the parameters with Monte-Carlo EM algorithm. Then, we introduce our procedure on quality control, differential expression analysis and visualization. At last, we apply our method on real experiment data.
+\section*{\sffamily Methods}
+\subsection*{\sffamily Modeling of observed count}
+We use Zero-inflated Poisson(ZIP) regression to model the scRNA-seq data. There is a indicator $Z_{cg}$ for gene $g$ in cell $c$ which suggests dropout event occurs if $Z_{cg} = 0$ and dropout does not occur if $Z_{cg} = 1$. We assume the read count of gene $g$ in cell $c$, $Y_{cg}$ subjects to a poisson distribution with parameter $\lambda_{cg}$ when dropout event does not occur, i.e. $Z_{cg} = 1$ while $Y_{cg}$ is zero when dropout event occurs, i.e. $Z_{cg} = 0$. So, our model for observed read count data can be write as:
+\begin{equation*}
+	Y_{cg} \sim \left\lbrace
+	\begin{matrix}
+	   Poisson(\lambda_{cg}) & (Z_{cg}=1);\\
+	   0 & (Z_{cg}=0).
+	\end{matrix}\right.
+\end{equation*}
+So that
+\begin{align*}
+P(Y_{cg} = 0) &= P(Z_{cg} = 0) + P(Z_{cg} = 1)\exp{(-\lambda_{cg})}\\
+P(Y_{cg} = k) &= P(Z_{cg} = 1)\frac{\lambda_{cg}^k}{k!}\exp{(-\lambda_{cg})}, k = 1, 2, \ldots.
+\end{align*}
+\subsection*{\sffamily Modeling of non-dropout}
+We use poisson distribution to approximate the non-dropout read count. $\lambda_{cg}$, the parameter of the poisson distribution, depends on the gene's true expression level, denoted by $\mu_{G(c)g}$. The function, $G(c): \mathrm{cell} \longrightarrow \mathrm{biological~ group}$, defines the map from cell to biological group. In other words, $\mu_{G(c)g}$ is the essential absolute molecule count level of biological group $G(c)$ for arbitrary gene $g$. Thus, $\lambda_{cg}$ can be written as:
+\begin{equation*}	
+\log(\lambda_{cg}) = \log(\mu_{G(c)g}) + \log(r_c) + \log(l_g) + b_c,
+\end{equation*}
+where the total read counts of cell $c$ is denoted by $r_c$ and the length of gene $g$ is denoted by $l_g$. We include total read counts and length of gene into account because the longer the gene is and the more read counts the cell is detected will lead to more read count for every gene of the cell, which is confounded with true expression level $\mu_{G(c)g}$. We add total read counts and gene length into our model in order to remove the confounded effect. $b_c$ is the batch effect of cell $c$. Motivated by \cite{Hicks2015On}, we assume that $\lambda_{cg}$ is proportional to $e^{b_c}$ in our model. $b_c$ also has impact on dropout rates and we will introduce it in the next section.
+\subsection*{\sffamily Modeling of dropout rates}
+For gene $g$ in cell $c$, let $Z_{cg}$ denotes the indicator for dropout. $Z_{cg}=1$ indicates dropout event does not occur for gene $g$ in cell $c$. We assume that $Z_{cg}$ is a random variable and subject to a Bernoulli distribution whose parameters are the following factors:(1)$r_c$, total read count in cell $c$; (2)$l_g$, length of gene $g$; (3)$B(c)$, batch of cell $c$; (4)$b_c$, batch effect for cell $c$, which is a cell specific covariate.
+	
+	We form a GLMM to jointly model these factors. To be specific, we can write the distribution of $Z_{cg}$ as:
+\begin{equation*}	
+Z_{cg}\sim Bernoulli\left(\Phi(\gamma+\alpha \log(r_c)+\beta \log(l_g)+\theta^T{\bf f}(b_c))\right),
+\end{equation*}
+	where ${\bf f}(\cdot)$ is a group of polynomial basis, i.e. $b_c, b_c^2, \ldots$, and $\Phi(\cdot)$ is the cumulative distribution function of standard normal distribution. $\{\alpha, \beta, \gamma, \theta^T\} \subset \Theta$ belongs to the set of coefficients for the model. The batch effect is captured by the random effect term $b_c\sim \mathcal{N} (\nu_{B(c)}, \sigma^2_{B(c)})$. $\nu_{B(c)}$ and $\sigma^2_{B(c)}$ are the mean and variance of the cell specific batch effect $b_c$ from batch $B(c)$ respectively. In other words, the $b_c$s of the cells in an identical batch are independently generated from a same normal distributed population with mean $\nu_{B(c)}$ and variance $\sigma^2_{B(c)}$. In addition, to ensure identifiability, we assume $\sum_{c}\nu_{B(c)}=0$.
+
+\subsection*{\sffamily Estimation of the coefficients}
+The number of parameters that can be estimated in the model depends on how we formulate the the polynomial basis of $b_c$. We cannot directly estimate the parameters with maximum likelihood estimation(MLE) since it's hard to maximize the log-likelihood for the model. The log-likelihood function can be found in the supplementary material for this article. The sum of exponentials and the random effect complicates the maximization of $L(\Theta;Y)$, which is the likelihood of the model.
+
+But suppose we knew which zeros came from dropout event and which came from the Poisson; that is, suppose we could observe $Z_{cg} = 1$ when $Y_{cg}$ is from the Poisson state and $Z_{cg} = 0$ when $Y_{cg}$ is from dropout event, zero state. What's more, if we also knew the random effect of the batch effect of all the cells, then the likelihood would change into a simple one(see the supplementary material of this article for details)
+\begin{equation*}
+L(\Theta; Y, \bf{Z}, \bf{b}) = L(\mu_{G(c),g}; \bf{Y}, \bf{Z}, \bf{b}) + L(\alpha, \beta, \gamma, \theta; \bf{Z}, \bf{b}) + G\cdot L(\nu_{B(c)}, \sigma^2_{B(c)}; \bf{b}) + r(Y, \bf{Z}, \bf{b}),
+\end{equation*}
+ where $\bf{Z}$ is the set of all the dropout indicators $Z_{cg}$ and $\bf{b}$ is the set of all the batch effect $b_c$. $r(Y, \bf{Z}, \bf{b})$ is the function with on relation with $\Theta$ which can be ignored in the procedure of MLE. $L(\mu_{G(c),g}; \bf{Y}, \bf{Z}, \bf{b})$ is the log-likelihood function when $\bf{Z}$ and $\bf{b}$ is known covariates for its response $Y$. $L(\alpha, \beta, \gamma, \theta; \bf{Z}, \bf{b})$ is the log-likelihood function when $\bf{b}$ is a known covariate for its response $\bf{Z}$. $L(\nu_{B(c)}, \sigma^2_{B(c)}\bf{b})$ is the log-likelihood function when $\bf{b}$ is the response of the parameters. The log-likelihood with complete data is easier to maximize than the log-likelihood with incomplete data because $L(\mu_{G(c),g}; \bf{Y}, \bf{Z}, \bf{b})$, $L(\alpha, \beta, \gamma, \theta; \bf{Z}, \bf{b})$ and $L(\nu_{B(c)}, \sigma^2_{B(c)}; \bf{b})$ can be maximized separately. So, we can implement EM algorithm\cite{Gupta2011Theory} to estimate the parameters.
+
+ With the EM algorithm, the incomplete log-likelihood is maximized iteratively by alternating between estimating log-likelihood by its posterior expectation (E step)under the current estimates of $\Theta$ and $Y$, then, given that the latent variable is removed by posterior expectation, maximizing the posterior expectation of the log-likelihood function whose dependent variable exclude the latent variables(M step). The algorithm stop when $\Theta$ converges. The estimates from the final iteration are the MLE's $\Theta$ for the log-likelihood.
+
+ However, since there are two latent variables, $\bf{Z}$ and $\bf{b}$, in this model, we cannot find the closure form solution of the joint posterior distribution of $\bf{Z}$ and $\bf{b}$. Meanwhile, the posterior expectation of log-likelihood is hard to be directly calculated because the complicated form of the complete data log-likelihood(see the supplementary material). These difficulties motivated us introduce \emph{data augmentation} and \emph{Monte-Carlo EM}\cite{Greg1990A} into our framework.
+\\
+\\
+{\bf Data Augmentation.} Now, we introduce another latent variable
+\begin{equation*}
+\eta_{cg} \sim N(\pi_{cg},1),
+\end{equation*}
+where $\pi_{cg}=\gamma+\alpha \log(r_c)+\beta \log(l_g)+\theta^T{\bf f}(b_c)$. $\eta_{cg}$ is independently drawn from $N(\pi_{cg},1)$. Then we have $P(\eta_{cg}>0) = \Phi(\pi_{cg})$. So $Z_{cg}$ can be treated as $Z_{cg}=\mathbf{1}_{\left\lbrace \eta_{cg}>0\right\rbrace}$. It can be proved that $(\eta_{cg}|Z_{cg},b_c,\alpha,\beta,\gamma,\theta)$ is a truncated normal distribution(TN)(See the supplementary material)
+	$$\eta_{cg}|Z_{cg},b_c,\alpha,\beta,\gamma,\theta \sim \left\lbrace
+	\begin{matrix}
+	TN(\pi_{cg},1,-\infty,0) ,& \text{if } Z_{cg}=0; \\
+	TN(\pi_{cg},1,0,\infty) ,& \text{if } Z_{cg}\neq 0 .
+	\end{matrix}\right. $$
+	Then
+	$(\eta_{cg}|Y_{cg},b_c,\alpha,\beta,\gamma,\theta)$ is subject to
+	$$\left\lbrace
+	\begin{matrix}
+	q_{cg}TN(\pi_{cg},1,-\infty,0)+(1-q_{cg})TN(\pi_{cg},1,0,\infty), &\text{if } Y_{cg}=0; \\
+	TN(\pi_{cg},1,0,\infty) ,& \text{if } Y_{cg}\neq 0 .
+	\end{matrix}\right. $$
+	with $q_{cg}=\frac{1-p_{cg}}{p_{cg}e^{-\lambda_{cg}}+1-p_{cg}}$, where $p_{cg}=\Phi(\pi_{cg})$. With the help of data augmentation, we steer clear of the computational complexity brought by logistic regression when maximizing the posterior expectation of $L(\alpha, \beta, \gamma, \theta; \bf{Z}, \bf{b})$(See the supplementary material) and The truncated normal distribution can be efficiently sampled with rejection sampling. Since the prior on $\alpha,\beta,\theta,\gamma$ is flat, $(\alpha,\beta,\theta,\gamma|b_c,\eta_{cg})$ is a normal distribution and easier to estimate.
+\\
+\\
+{\bf E step.} We use Monte-Carlo EM algorithm to fit the model, i.e., implement Monte-Carlo method to approximate the posterior expectation of log-likelihood.
+\begin{equation*}
+E_{\bf{Z},\bf{\eta},\bf{b}|\bf{Y}, \Theta}\left[ L \left[ \bf{Y},\bf{b},\bf{\eta},\bf{Z} ; \Theta \right] | \hat{\Theta}^{(t)},\bf{Y}\right]\approx \frac{1}{K} \sum_{k=1}^K E_{Z,\eta|\bf{Y}, \Theta, \bf{b}_k}\left[L \left[ \bf{Y},\bf{b}_k,\bf{\eta},\bf{Z} ; \Theta \right]|\hat{\Theta}^{(t)},\bf{Y}, \bf{b}_k\right],
+\end{equation*}
+where ${\bf{b}_k} = (b_{1k}, b_{2k}, \ldots, b_{Ck})$ subject to $({\bf{b}}|{\bf{Y}},\hat{\Theta}^{(t)}),$ is the marginal posterior distribution of $\bf{b}$ under the data $\bf{Y}$ and the current estimates $\hat{\Theta}^{(t)}$. $K$ is the number of samples. In each iteration of E-step, $\bf{b}_k$ is firstly and independently sampled from $(\bf{b}|\bf{Y},\hat{\Theta}^{(t)})$ via Metropolis-Hastings algorithm\cite{Greenberg1995Understanding}.With the sampled ${\bf b}_k$, $(\eta_{cg}|Y_{cg},b_c,\alpha,\beta,\gamma,\theta)$ follows truncated normal distribution, whose expectation is easy to compute. In addition, posterior expectation of $Z_{cg}$ is computed by Bayes formula given ${\bf b}_k$, parameters, and the observed data. Thus the expectation-maximization can be divided into three parts:(1).$\sum_{k=1}^K E_{Z|\bf{Y}, \Theta, \bf{b}_k}\left[L \left[ \bf{Y},\bf{b}_k,\bf{Z} ; \mu \right]|\hat{\Theta}^{(t)},\bf{Y}, \bf{b}_k\right]$ , (2). $\sum_{k=1}^K E_{\eta|\bf{Y}, \Theta, \bf{b}_k}\left[L \left[\eta ,\bf{b}_k; \gamma, \alpha, \beta, \theta\right]|\hat{\Theta}^{(t)},\bf{Y}, \bf{b}_k\right]$ and (3). $\sum_{k = 1}^{K}{L({\bf b}_k; \nu, \sigma})$. We can maximize them separately in the M step.
+\\
+\\
+{\bf M step for $\mu$.} When analyzing data from different biological groups, $\widehat{\mu}_{cg}$ can be obtained via averaging weighted by the posterior mean of $Z_{cg}$ and $e^{b_c}$. To be specific, we have
+\begin{align*}
+&\sum_{k=1}^K E_{Z|Y_{cg}, \Theta, b_{ck}}\left\{\sum_{c \in G(c)}\left[L \left[ Y_{cg},b_{ck},Z_{cg} ; \mu_{G(c)g} \right]|\hat{\Theta}^{(t)},Y_{cg}, b_{ck}\right]\right\}\\
+= &\log{(\mu_{G(c)g})}\sum_{c\in G(c)}{\left[y_{cg}\sum_{k=1}^K\widetilde{Z_{cgk}}\right]} - \mu_{G(c)g}l_g\sum_{c\in G(c)}\left[r_c\sum_{k = 1}^K\widetilde{Z_{cgk}}e^{b_{ck}}\right],
+\end{align*}
+where $\widetilde{Z_{cgk}}$ is the posterior expectation of $Z_{cg}$ given ${\bf b}_k$, parameters, and the observed data(See the supplementary material). $\mu_{G(c)g}$ maximize the log-likelihood function for every biological group $G(c)$ and gene $g$. So, the estimator of $\mu_{G(c)g}$ is given by
+\begin{equation*}
+\widehat{\mu_{G(c)g}} = \frac{\sum_{c\in G(c)}{\left[y_{cg}\sum_{k=1}^K\widetilde{Z_{cgk}}\right]}}{l_g\sum_{c\in G(c)}\left[r_c\sum_{k = 1}^K\widetilde{Z_{cgk}}e^{b_{ck}}\right]}.
+\end{equation*}
+\\
+\\
+{\bf M step for $\gamma$, $\alpha$, $\beta$ and $\theta$.} With the help of data augmentation, $L (\left[\eta ,\bf{b}_k; \gamma, \alpha, \beta, \theta\right]|\hat{\Theta}^{(t)},\bf{Y}, \bf{b}_k)$ replaces $L (\left[{\bf Z} ,\bf{b}_k; \gamma, \alpha, \beta, \theta\right]|\hat{\Theta}^{(t)},\bf{Y}, \bf{b}_k)$ which is very easy to parameterize(See the supplementary material). Since $\eta_{cg} \sim N(\pi_{cg}, 1)$, the maximization of the expectation of the log-likelihood $L (\left[\eta ,\bf{b}_k; \gamma, \alpha, \beta, \theta\right]|\hat{\Theta}^{(t)},\bf{Y}, \bf{b}_k)$ is equivalent to the least square estimate. The estimators of $\gamma$, $\alpha$, $\beta$ and $\theta$ can be found in the supplementary material.
+\\
+\\
+{\bf M step for $\nu$ and $\sigma$.} To find the estimator of $\nu_{B(c)}$ and $\sigma_{B(c)}^2$, we can simply implement restrained MLE with the data set ${\bf b} = \{b_{11}, b_{12}, \ldots, b_{1K}, b_{21}, \ldots, \ldots, b_{ck}, \ldots b_{CK}\}$ and the restriction of identifiability  $\sum_{c}\nu_{B(c)}=0$.
+\subsection*{\sffamily Quality Control}
+Quality control is implemented in our model to detect the abnormity cell in the experiment after the parameters are estimated. In most previous work, principal component analysis(PCA) is the most common method of quality control. However, PCA cannot tell us how abnormity a cell is since we judge whether a cell is abnormity with PCA by visual inspection, which is very subjective. we propose a method of quality control here based on the random batch effect in the ZIP model.
+
+In the E-step of the Monte-Carlo EM algorithm, we have sampled a set of posterior ${\bf b}_k$s from $(\bf{b}|{\bf Y},\hat{\Theta})$ for each cell $c$ in each batch $B(c)$. So, the data set ${\bf b}$, which is a set of number, contains $C \times K$ $b_{ck}$s. And then, we can derive the empirical $p$-value for each cell and conduct quality control with these ${\bf b}_k$s. The empirical $p$-value for $b_{ck}$ is given by
+\begin{equation*}
+p_c^k= \frac{\#\left\lbrace c',k':|b_{c'k'}|\geq b_{ck}\right\rbrace }{CK}, \mathrm{for}~ c' = 1, 2, \ldots, C; k' = 1, 2, \ldots, K.
+\end{equation*}
+For each cell $c$, define $m_c=\#\left\lbrace k:p_c^k<0.05\right\rbrace $. We use Fisher's exact test \cite{Fisher1922On} to test whether $m_c/K$ is significantly larger than $0.05$.
+\subsection*{\sffamily Differential Expression}
+We propose a likelihood ratio test method to detect differential expression of gene $g$ between two biological groups $A$ and $B$, i.e., $H_0:\mu_{Ag}=\mu_{Bg}$ v.s. $H_1:\mu_{Ag}\neq \mu_{Bg}$. Now, we denote $\textbf{y}_g=(Y_{1g},\dots,Y_{Cg})$. First fit the model under $H_0$ and get posterior estimations of $p_{cg}$ and $b_c$. Under $H_0$, when the parameters are known $\hat{\mathcal{L}}_{1g}-\hat{\mathcal{L}}_{0g}$ is subject to $\chi^2(1)$. However, since the parameters are estimated by us, $\hat{\mathcal{L}}_{1g}-\hat{\mathcal{L}}_{0g}$ is subject to $T\chi^2(1)$,  where $T$ is an unknown constant. We need to estimate $T$ then find the $p$-value for each gene. In the following steps we treat $p_{cg}$ and $b_c$ are fixed.
+	\begin{enumerate}
+		\item Let $\hat{\mathcal{L}}_{0g}$ and $\hat{\mathcal{L}}_{1g}$ be the maximized likelihood for $\textbf{y}_g$ achieved under $H_0$ and $H_1$.
+		\item Randomly assign group label $x_c\in \left\lbrace A,B\right\rbrace $ for each cell, fit the model for $\textbf{y}_g$ under $H_1$ and compute the maximized likelihoods. Repeat for $M$ times and denote the maximized likelihoods by $ \hat{\mathcal{L}}_{1g}^{(m)},m=1,2,\dots,M$.
+		\item Under null hypothesis, $\frac{\hat{\mathcal{L}}_{1g}-\hat{\mathcal{L}}_{0g}}{T}  \sim \chi^2(1)$, where $T$ is an unknown constant. Estimate $T$ by $\sum_{m=1}^M\left[ \hat{\mathcal{L}}_{1g}^{(m)}-\hat{\mathcal{L}}_{0g}\right]/M$, then we can compute $p$-value for this test.
+	\end{enumerate}
+
+After deriving the $p$-value for each individual gene $g$, we apply Benjamini-Hochberg procedure to implement FDR control and get the set of differentially expressed genes.
+\subsection*{\sffamily Visualization}
+We implement a weighted version of PCA to do visualization by using weighted covariance matrix. Entries of the weighted covariance matrix is calculated as
+\begin{equation*}
+\hat{\Sigma}(i,j)=\frac{\sum_g(y^*_{ig}-\bar{y}^*_i)(y^*_{jg}-\bar{y}^*_j)\hat{p}_{ig}\hat{p}_{jg}}{\sum_g \hat{p}_{ig}\hat{p}_{jg}}, 1 \leq i,j \leq C,
+\end{equation*}
+where $y^*_{ig}=y_{ig}/E[e^{b_i}|Y,\widehat{\Theta}]$, and $y_{ig}$ is normalized or log normalized expression level (RPKM or log(RPKM+1)) and $\hat{p}_{ig}$ is the posterior probability that $Z_{ig} = 1$. We use this matrix to replace the covariance matrix in traditional PCA.
+
+	We implement PCA on $\hat{\Sigma}$ to get the low-dimensional embedding of the data. With weighted covariance matrix specified, we can also obtain dissimilarity matrix directly and implement manifold learning method like ISOmap to visualize data.
+\section*{\sffamily Applications}
+To evaluate our method's performance, we implement it on embryonic cells' scRNA-seq data\cite{deng2014single}. In the article, there are totally 22958 genes and 54 Cells from two biological group (8-cell and 16-cell) and two batches (run-00193, run-0088) as is shown in Table \ref{tab:1}.
+\begin{table}[htbp]
+\center
+\begin{tabular}{ccc}
+\hline
+      & 16-cell  & 8-cell \\
+run-88 (batch 1) & 27 & 10 \\
+run-193 (batch 2)& 8  & 9 \\
+\hline
+\end{tabular}
+\caption{Design of the scRNA-seq experiment.}
+\label{tab:1}
+\end{table}
+ For pre-processing, we delete genes with extreme high expression level (top 5\%), and genes detected in less than 10\% cells, which are common procedures in scRNA-seq data analysis. And 11724 genes are remained after the pre-processing.
+\subsection*{\sffamily Quality Control}
+We fit our model on the pre-processed data with our introduced zero-inflated poisson model. Linear function $b_c$ is adopted for the dropout probability, which means $f(b_c) = b_c$. So there only contain one parameter in $theta$. It takes less than 5 minutes to run the algorithm, while it takes \cite{Jia116939} hours to fit their model. No alter for convergence of the sampling method and the EM procedure appears. After the model is fitted, we have:
+\begin{enumerate}
+\item Estimator for $\theta$, turns out to be less than 0, which indicates the negative correlation between the cells' detection rate and mean expression level discussed in \cite{Hicks2015On}.
+\item Our proposed quality control procedure selects three cells, with p-values less than $10^{-10}$ in the fisher's exact test. These three cells are exactly the three with the lowest detection rates (proportion of nonzero genes).
+\end{enumerate}
+\subsection*{\sffamily Differential Expression}
+Our method for differential expression detection is implemented after deleting the three cells of low quality and refitting our model. After the model is fitted again with three cells discarded, we have:
+\begin{enumerate}
+\item Empirical distribution of the simulated log-likelihood ratio under null hypothesis seems to be proportional to $\chi^2(1)$ distribution. Figure \ref{fig:1} and figure \ref{fig:2} show the histogram of the log-likelihood ratio $\hat{\mathcal{L}}_{1g}^{(m)}-\hat{\mathcal{L}}_{0g}$ for two randomly selected genes.
+\item Our method finds only 4 genes with Benjamini-Hochberg corrected p-values less than 0.001. While DEseq\cite{anders2010differential} finds 2 significant differential expressed genes and DEseq2\cite{love2014moderated} (adjusting for batch) finds 3 significant differential expressed genes with the same pre-processing procedure. The 4 genes detected by our method are neither detected by DEseq nor DEseq2.
+\end{enumerate}
+\begin{figure}[H]
+\centering
+    \begin{minipage}[h]{5in}
+    \centering
+    \includegraphics[width=5in]{loglike1.eps}
+    \caption{Histogram for the distribution of log-likelihood ratio for one specific gene}
+    \label{fig:1}
+    \end{minipage}
+\end{figure}
+\begin{figure}[H]
+\centering
+    \begin{minipage}[h]{5in}
+    \centering
+    \includegraphics[width=5in]{loglike2.eps}
+    \caption{Histogram for the distribution of log-likelihood ratio for one specific gene}
+    \label{fig:2}
+    \end{minipage}
+\end{figure}
+\subsection*{\sffamily Visulization}
+We implement weighted PCA and manifold learning method Isomap to visualize the data with the abnormity cells and genes removed. Results are compared with PCA method and Isomap method on the pre-processed normalized raw data. Comparing figure \ref{fig:3} and figure \ref{fig:4} provides evidence that the batch effects are adequately adjusted for in these data. Isomap algorithm is also implemented joint with adjustment for our method. The dissimilarity matrix is computed by the weighted covariance matrix. The comparison of the raw data and the adjusted data is shown in figure \ref{fig:5} and figure \ref{fig:6}.
+\begin{figure}[H]
+\centering
+    \begin{minipage}[h]{4.5in}
+    \centering
+    \includegraphics[width=4.5in]{raw_plot.eps}
+    \caption{PCA on normalized raw data}
+    \label{fig:3}
+    \end{minipage}
+\end{figure}
+\begin{figure}[H]
+\centering
+    \begin{minipage}[h]{4.5in}
+    \centering
+    \includegraphics[width=4.5in]{weight_plot.eps}
+    \caption{Our weighted PCA method.}
+    \label{fig:4}
+    \end{minipage}
+\end{figure}
+\begin{figure}[H]
+\centering
+    \begin{minipage}[h]{4.5in}
+    \centering
+    \includegraphics[width=4.5in]{ISOmap.eps}
+    \caption{ISOmap on normalized raw data, with parameters of dissimilarity tuned by us.}
+    \label{fig:5}
+    \end{minipage}
+\end{figure}
+\begin{figure}[H]
+\centering
+    \begin{minipage}[h]{4.5in}
+    \centering
+    \includegraphics[width=4.5in]{isomap_adj.eps}
+    \caption{ISOmap on data adjusted by our method, with parameters of dissimilarity.}
+    \label{fig:6}
+    \end{minipage}
+\end{figure}
+\section*{\sffamily Conclusions}
+Systematic bias in RNA sequencing is a very common problem faced by researchers in the area of biological engineering. Our zero-inflated poisson model is a powerful method to account and adjust for the batch effects taking the overdispersion of dropout events into consideration. The ZIP model can somehow remove the batch effect in the real world data. With EM algorithm and data augmentation, we proof that ZIP model is feasible and computational acceptable. Quality control, differential expression analysis and visualization are easy to implemented after the model is fitted and the batch effects are adjusted.
+
+However, the ZIP model still have some space to be improved£º
+\begin{enumerate}
+\item Conservative on accounting and adjusting for batch effect. A possible solution is to add more penalize to $(b_c-\nu_{B(c)})^2$ since we regard normal prior is equivalent to a penalization.
+\item Though modelling technical excess zero, Poisson assumption of the true count data seems to be still improper. The true count data is overdispersed than Poisson. These could cause our method to be poor in power.
+\item Beta-Poisson or zero-inflated Poisson seem to be a way out, but would introduce too much computational burden.
+\end{enumerate}
+
+\section*{\sffamily Acknowledgment}
+\par
+\bibliography{references}
+\end{document}
