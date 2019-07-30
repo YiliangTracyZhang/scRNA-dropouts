@@ -39,7 +39,9 @@ Nu2 = nu2[3]
 for(j in 1:5){
         B = Beta[j]
         for(i in 1:100){
+                
                 # 1.modeling of non-dropout
+                
                 r = exp(rnorm(n)) # total read counts in each cell
                 b1 = rnorm(n/2, mean = Nu1, sd = Sigma) # batch effect in batch 1
                 b2 = rnorm(n/2, mean = Nu2, sd = Sigma) # batch effect in batch 2
@@ -48,6 +50,7 @@ for(j in 1:5){
                 Lambda = (mu*l) %*% t(r*exp.b) # non-dropout read count
                 
                 # 2.modeling of dropout effect
+                
                 Epsilon <- matrix(rnorm(p*n), p, n)
                 Z = Epsilon <= (
                         C*rep(1,p)%*%t(rep(1,n))
@@ -56,6 +59,7 @@ for(j in 1:5){
                 ) 
                 
                 # 3.expression of read count
+                
                 Y = cbind(Z*matrix(rpois(p*n, as.vector(Lambda)), p, n),l)
                 
         write.table(Y, paste0('/home/kl764/project/singlecell/simulation/alterB/', B, '/read', i,'.txt'), 
