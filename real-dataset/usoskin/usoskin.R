@@ -48,8 +48,13 @@ results$coef
 results.para <- data.frame(c(as.numeric(results$nu), as.numeric(results$sigma2), as.numeric(results$coef)))
 row.names(results.para) <- c('nu1','nu2', 'nu3', 'sig2-1', 'sig2-2', 'sig2-3', 'coef-1', 'coef-2', 'coef-3', 'coef-4' )
 # df <- data.frame(unlist(results.list))
-write.table(results.para, paste0('/Users/kexuanliang/Documents/singlecell/real_data/usoskin/results.txt'), quote = F, col.names = F)
-write.table(data.frame(results$mu), paste0('/Users/kexuanliang/Documents/singlecell/real_data/usoskin/true.expression.txt'), quote = F)
+write.table(results.para, paste0('/Users/kexuanliang/Documents/singlecell/real_data/usoskin/results-2.txt'), quote = F, col.names = F)
+write.table(data.frame(results$mu), paste0('/Users/kexuanliang/Documents/singlecell/real_data/usoskin/true.expression-2.txt'), quote = F)
+write.table(data.frame(results$bsample), paste0('/Users/kexuanliang/Documents/singlecell/real_data/usoskin/bsample-2.txt'), quote = F, col.names = F)
+write.table(data.frame(results$pweight), paste0('/Users/kexuanliang/Documents/singlecell/real_data/usoskin/pweight-2.txt'), quote = F, col.names = F)
+write.table(data.frame(results$eta), paste0('/Users/kexuanliang/Documents/singlecell/real_data/usoskin/eta-2.txt'), quote = F, col.names = F)
+write.table(data.frame(results$Phi), paste0('/Users/kexuanliang/Documents/singlecell/real_data/usoskin/phi-2.txt'), quote = F, col.names = F)
+
 
 quality.control <- DABB_QC(results, alternative = 'right')
 pvalue_out <- data.frame(cbind( 1:length(quality.control), quality.control))
