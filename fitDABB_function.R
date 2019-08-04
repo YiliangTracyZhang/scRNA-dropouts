@@ -234,11 +234,10 @@ DABB_QC <- function(results, alternative = 'right', level = 0.05){
       cont_table <- cbind(c(as.integer(sample_num * level), sample_num),
                           c(sig_num[i], S_num))
 
-      print('dim(cont_table)',dim(cont_table))
-
       p_value <- fisher.test(cont_table, alternative = 'less')$p.value
       pvalue_lst <- c(pvalue_lst, p_value)
     }
+    print(c('dim(cont_table)',dim(cont_table)))
   }
 
   if (alternative == 'left'){
@@ -408,7 +407,7 @@ DABB_visualize <- function(Y, tot_read, gene_len, p_weight, b_sample_mat,
     
     print(c('dim(m)', dim(m)))
     
-    Dissmilar <- as.dist(m)
+    Dissimilar <- as.dist(m)
  #   Dissimilar <- as.dist(diag(cov_mat) %*% t(rep(1, C_num)) +
   #    t(diag(cov_mat) %*% t(rep(1, C_num))) -  2 * cov_mat)
     

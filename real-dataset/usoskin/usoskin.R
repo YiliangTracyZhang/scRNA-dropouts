@@ -60,7 +60,7 @@ quality.control <- DABB_QC(results, alternative = 'right')
 pvalue_out <- data.frame(cbind( 1:length(quality.control), quality.control))
 names(pvalue_out) <- c('gene.num', 'p_value')
 outliner <- data.frame(pvalue_out[pvalue_out$p_value <= 0.05,])
-write.table(outliner,paste0('/Users/kexuanliang/Documents/singlecell/real_data/usoskin/qc.txt'), sep = '')
+write.table(outliner,paste0('/Users/kexuanliang/Documents/singlecell/real_data/usoskin/qc-2.txt'), sep = '')
 
 #Differential Expression without qc
 pvl <- DABB_DE(Y, tot_read, bio_ind, gene_len, results, sample_num = 200) #not use
@@ -84,9 +84,10 @@ library(vegan)
 ## visualize our result before quality control
 visual <- DABB_visualize(Y, tot_read, gene_len, results$pweight,
                        results$bsample, method = 'PCA', k = 10)
+write.table(visual, paste0('/Users/kexuanliang/Documents/singlecell/real_data/usoskin/visual.pca-2.txt'), sep = '')
 visual <- DABB_visualize(Y, tot_read, gene_len, results$pweight,
                          results$bsample, method = 'ISOmap', k = 10)
-write.table(visual, paste0('/Users/kexuanliang/Documents/singlecell/real_data/usoskin/visual.txt'), sep = '')
+write.table(visual, paste0('/Users/kexuanliang/Documents/singlecell/real_data/usoskin/visual.iso-2.txt'), sep = '')
 
 pc1 <- visual[,1]
 pc2 <- visual[,2]
@@ -136,6 +137,7 @@ pc2.b3.t4  <- pc2 [ bat_ind == 3 & bio_ind == 4 ]
  p <-  p + geom_point(data=data.frame(pc1.b3.t3 , pc2.b3.t3 ), aes(x=pc1.b3.t3 , y=pc2.b3.t3 , color="PHP", shape='RT-2'),    size=2)
  p <-  p + geom_point(data=data.frame(pc1.b3.t4 , pc2.b3.t4 ), aes(x=pc1.b3.t4 , y=pc2.b3.t4 , color="TH", shape='RT-2'),    size=2)
 
+ p + scale_color_discrete(name="cell type") + scale_shape_discrete(name="batch")
 
  ## visualize our result after quality control
  visual.qc <- DABB_visualize(Y[,-outliner$gene.num], tot_read[-outliner$gene.num], gene_len, results.qc$pweight,
