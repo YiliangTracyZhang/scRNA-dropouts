@@ -74,6 +74,7 @@ print(c('dim(Design_mat)= ', dim(Design_mat)))
     #E-step
     if (iter > 1 & iter < 3){
       sig_jump <- dec_rate * sig_jump
+      print(c('sig_jump',sig_jump))
     }#X iter = 2???
 
     b_sample_mat <- c()
@@ -87,7 +88,9 @@ print(c('dim(Design_mat)= ', dim(Design_mat)))
 
     b_old <- rnorm(C_num, as.vector(bat_mat %*% nu_Bat),
                    as.vector(bat_mat %*% sigma2_Bat^0.5)) #X estimated batch effect
-
+#print(as.vector(bat_mat %*% nu_Bat))
+#print(as.vector(bat_mat %*% sigma2_Bat^0.5))
+#print(b_old)
     lst_post_old <- b_post_loglike(Y, b_old, mu_mat, bio_mat, RL_mat, Y_binary,
                                    coef, Design_mat, bat_mat, nu_Bat, sigma2_Bat)
     #X loglike1 = loglike_cell + b_loglike_vec, loglike2 = loglike_cell,
@@ -103,13 +106,20 @@ print(c('dim(Design_mat)= ', dim(Design_mat)))
 
     for (ii in 1:MH_num){
       #Metropolis-Hasting
+            # print(C_num)
+            # print(str(cbind(b_old, rep(sig_jump,C_num)))) NaN
+            
       b_new <- rnorm(C_num, b_old, rep(sig_jump, C_num)) #sampling batch effect
+     # print(b_new) NaN
       lst_post_new <- b_post_loglike(Y, b_new, mu_mat, bio_mat, RL_mat, Y_binary,
                                      coef, Design_mat, bat_mat, nu_Bat, sigma2_Bat)
       log_post_new <- lst_post_new$loglike1
       log_post_diff <- log_post_new - log_post_old
+     # print(cbind(log_post_new, log_post_diff))
       r <- ifelse(log_post_diff >= 0, 1, exp(log_post_diff))
+      
       unif <- runif(C_num)
+     
       b_old <- ifelse(r > unif, b_new, b_old) #X update the value of batch effect
       log_post_old <- ifelse(r > unif, log_post_new, log_post_old) #X update the value of log likelihood
       jump_vec <- as.vector(ifelse(r > unif, 1, 0)) #X vector to show if b /log likelihood is updated
@@ -144,7 +154,9 @@ print(c('dim(Design_mat)= ', dim(Design_mat)))
     loglike_new <- sum(loglike_vec)
     Phi_mat <- Phi_mat / sample_num
     ##loglike_all <- loglike_all / sample_num
-
+    
+   # print(jump_mat)# check error
+    
     print(mean(jump_mat))
 
     #M-step
@@ -192,7 +204,13 @@ b_post_loglike <- function(Y, b_vec, mu_mat, bio_mat, RL_mat, Y_binary,
   p_nodrop_mat <- matrix(pnorm(eta_mean_vec), G_num, C_num) #X probability of non-dropout
   zero_poisson <- p_nodrop_mat * (1 - Y_binary) * exp(-lambda_mat) #X probability of zero counts due to poisson distribution
   zero_prob <- zero_poisson + (1 - p_nodrop_mat) * (1 - Y_binary) #X probability of zero counts due to poisson distribution + dropout
-
+print(C_num)
+print(G_num)
+print(str(lambda_mat))
+print(str(eta_mean))
+print(str(p_nodrop_mat))
+print(str(zero_poisson))
+print(str(zero_prob))
   #X log likelihood when Z and b are known
   loglike_mat <-
           Y * log((1e-10) + lambda_mat) - lambda_mat * Y_binary +
@@ -274,9 +292,9 @@ DABB_QC <- function(results, alternative = 'right', level = 0.05){
     }
   }
   return(pvalue_lst)
-  pvalue_out <- data.frame(cbind(1:length(pvalue_lst), pvalue_lst))
-  names(pvalue_out) <- c('gene.num', 'p_value')
-  return(pvalue_out[pvalue_out$p_value <= 0.05,])
+#  pvalue_out <- data.frame(cbind(1:length(pvalue_lst), pvalue_lst))
+#  names(pvalue_out) <- c('gene.num', 'p_value')
+#   return(pvalue_out[pvalue_out$p_value <= 0.05,])
 }
 
 

@@ -59,8 +59,8 @@ write.table(data.frame(results$Phi), paste0('/Users/kexuanliang/Documents/single
 quality.control <- DABB_QC(results, alternative = 'right')
 pvalue_out <- data.frame(cbind( 1:length(quality.control), quality.control))
 names(pvalue_out) <- c('gene.num', 'p_value')
-outliner <- data.frame(pvalue_out[pvalue_out$p_value <= 0.05,])
-write.table(outliner,paste0('/Users/kexuanliang/Documents/singlecell/real_data/usoskin/qc-2.txt'), sep = '')
+outlier <- data.frame(pvalue_out[pvalue_out$p_value <= 0.05,])
+write.table(outlier,paste0('/Users/kexuanliang/Documents/singlecell/real_data/usoskin/qc-2.txt'), sep = '')
 
 #Differential Expression without qc
 pvl <- DABB_DE(Y, tot_read, bio_ind, gene_len, results, sample_num = 200) #not use
