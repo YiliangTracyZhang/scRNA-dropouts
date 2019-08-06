@@ -8,38 +8,48 @@ MH_bc <- function(Y, Y_zero, Cell_N, Gene_N, bc, Lambda, Pi, Theta, Nu, Sigma, s
   Lambda_bc <- sweep(Lambda, 2, exp(bc), FUN='*')
   Pi_bc <- sweep(Pi, 2, bc*Theta, FUN='+')
   Phi <- pnorm(Pi_bc)
-  integrate_z <- apply(Y_zero*(1-Phi)+Phi*Lambda_bc^Y*exp(-Lambda_bc), 2, prod)
-  poster_density <- exp(-(bc-Nu)^2/(2*Sigma^2))*integrate_z
+  # integrate_z <- apply(Y_zero*(1-Phi)+Phi*Lambda_bc^Y*exp(-Lambda_bc), 2, prod)
+  # poster_density <- exp(-(bc-Nu)^2/(2*Sigma^2))*integrate_z
   
   for(i in 1:burn){
     bc_propose <- bc + rnorm(Cell_N, mean=0, sd=step)
-    Lambda_bc <- sweep(Lambda, 2, exp(bc_propose), FUN='*')
-    Pi_bc <- sweep(Pi, 2, bc_propose*Theta, FUN='+')
-    Phi <- pnorm(Pi_bc)
-    integrate_z <- apply(Y_zero*(1-Phi)+Phi*Lambda_bc^Y*exp(-Lambda_bc), 2, prod)
-    poster_density_propose <- exp(-(bc_propose-Nu)^2/(2*Sigma^2))*integrate_z
-    ratio <- poster_density_propose/poster_density
+    Lambda_bc_propose <- sweep(Lambda, 2, exp(bc_propose), FUN='*')
+    Pi_bc_propose <- sweep(Pi, 2, bc_propose*Theta, FUN='+')
+    Phi_propose <- pnorm(Pi_bc_propose)
+    integrate_z <- apply((Y_zero*(1-Phi_propose)+Phi_propose*(Lambda_bc_propose/Lambda_bc)^Y*exp(-Lambda_bc_propose))/(Y_zero*(1-Phi)+Phi*exp(-Lambda_bc)), 2, prod)
+    #poster_density_propose <- exp(-(bc_propose-Nu)^2/(2*Sigma^2))*integrate_z
+    #ratio <- poster_density_propose/poster_density
+    ratio <- exp((-(bc_propose-Nu)^2+(bc-Nu)^2)/(2*Sigma^2))*integrate_z
     hidden <- runif(Cell_N)
-    bc[ratio>hidden] <- bc_propose[ratio>hidden]
-    poster_density[ratio>hidden] <- poster_density_propose[ratio>hidden]
+    accept <- ratio>hidden
+    bc[accept] <- bc_propose[accept]
+    Lambda_bc[,accept] <- Lambda_bc_propose[,accept]
+    Pi_bc[,accept] <- Pi_bc_propose[,accept]
+    Phi[,accept] <- Phi_propose[,accept]
+    #poster_density[ratio>hidden] <- poster_density_propose[ratio>hidden]
   }
   for(i in 1:K){
     bc_propose <- bc + rnorm(Cell_N, mean=0, sd=step)
-    Lambda_bc <- sweep(Lambda, 2, exp(bc_propose), FUN='*')
-    Pi_bc <- sweep(Pi, 2, bc_propose*Theta, FUN='+')
-    Phi <- pnorm(Pi_bc)
-    integrate_z <- apply(Y_zero*(1-Phi)+Phi*Lambda_bc^Y*exp(-Lambda_bc), 2, prod)
-    poster_density_propose <- exp(-(bc_propose-Nu)^2/(2*Sigma^2))*integrate_z
-    ratio <- poster_density_propose/poster_density
+    Lambda_bc_propose <- sweep(Lambda, 2, exp(bc_propose), FUN='*')
+    Pi_bc_propose <- sweep(Pi, 2, bc_propose*Theta, FUN='+')
+    Phi_propose <- pnorm(Pi_bc_propose)
+    integrate_z <- apply((Y_zero*(1-Phi_propose)+Phi_propose*(Lambda_bc_propose/Lambda_bc)^Y*exp(-Lambda_bc_propose))/(Y_zero*(1-Phi)+Phi*exp(-Lambda_bc)), 2, prod)
+    #poster_density_propose <- exp(-(bc_propose-Nu)^2/(2*Sigma^2))*integrate_z
+    #ratio <- poster_density_propose/poster_density
+    ratio <- exp((-(bc_propose-Nu)^2+(bc-Nu)^2)/(2*Sigma^2))*integrate_z
     hidden <- runif(Cell_N)
-    bc[ratio>hidden] <- bc_propose[ratio>hidden]
-    poster_density[ratio>hidden] <- poster_density_propose[ratio>hidden]
+    accept <- ratio>hidden
+    bc[accept] <- bc_propose[accept]
+    Lambda_bc[,accept] <- Lambda_bc_propose[,accept]
+    Pi_bc[,accept] <- Pi_bc_propose[,accept]
+    Phi[,accept] <- Phi_propose[,accept]
+    #poster_density[ratio>hidden] <- poster_density_propose[ratio>hidden]
     bc_sample[,i] <- bc
-    Pi_bc <- sweep(Pi, 2, bc*Theta, FUN='+')
-    Phi <- pnorm(Pi_bc)
+    #Pi_bc <- sweep(Pi, 2, bc*Theta, FUN='+')
+    #Phi <- pnorm(Pi_bc)
     ita <- ita + Pi_bc + exp(-Pi_bc^2/2)/(sqrt(2*pi)*Phi)
     expbc <- exp(bc)
-    Lambda_bc <- sweep(Lambda, 2, expbc, FUN='*')
+    #Lambda_bc <- sweep(Lambda, 2, expbc, FUN='*')
     explambda <- exp(-Lambda_bc)
     z_temp <- Phi*explambda/(1+Phi*(explambda-1))
     Z <- Z + z_temp
