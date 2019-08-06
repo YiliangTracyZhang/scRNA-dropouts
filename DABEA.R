@@ -1,4 +1,4 @@
-MH_bc(Y, Y_zero, Cell_N, Gene_N, bc, Lambda, Pi, Theta, Nu, Sigma, step, burn, K){
+MH_bc <- function(Y, Y_zero, Cell_N, Gene_N, bc, Lambda, Pi, Theta, Nu, Sigma, step, burn, K){
   # Cell_N <- ncol(Y)
   # Gene_N <- nrow(Y)
   bc_sample <- matrix(0, ncol=K, nrow=Cell_N)
@@ -16,7 +16,7 @@ MH_bc(Y, Y_zero, Cell_N, Gene_N, bc, Lambda, Pi, Theta, Nu, Sigma, step, burn, K
     Lambda_bc <- sweep(Lambda, 2, exp(bc_propose), FUN='*')
     Pi_bc <- sweep(Pi, 2, bc_propose*Theta, FUN='+')
     Phi <- pnorm(Pi_bc)
-    integrate_z <- apply(Y_zero*(1-Phi)+Phi*Lambda^Y*exp(-Lambda), 2, prod)
+    integrate_z <- apply(Y_zero*(1-Phi)+Phi*Lambda_bc^Y*exp(-Lambda_bc), 2, prod)
     poster_density_propose <- exp(-(bc_propose-Nu)^2/(2*Sigma^2))*integrate_z
     ratio <- poster_density_propose/poster_density
     hidden <- runif(Cell_N)
@@ -28,7 +28,7 @@ MH_bc(Y, Y_zero, Cell_N, Gene_N, bc, Lambda, Pi, Theta, Nu, Sigma, step, burn, K
     Lambda_bc <- sweep(Lambda, 2, exp(bc_propose), FUN='*')
     Pi_bc <- sweep(Pi, 2, bc_propose*Theta, FUN='+')
     Phi <- pnorm(Pi_bc)
-    integrate_z <- apply(Y_zero*(1-Phi)+Phi*Lambda^Y*exp(-Lambda), 2, prod)
+    integrate_z <- apply(Y_zero*(1-Phi)+Phi*Lambda_bc^Y*exp(-Lambda_bc), 2, prod)
     poster_density_propose <- exp(-(bc_propose-Nu)^2/(2*Sigma^2))*integrate_z
     ratio <- poster_density_propose/poster_density
     hidden <- runif(Cell_N)
@@ -71,7 +71,7 @@ fitDABEA <- function(Y, tot_read, bat_ind, bio_ind, gene_len, step=1, burn=1000,
   Mu <- t(apply(Y, 1, FUN=function(x)aggregate(x, by=list(bio_ind), mean)[,2]))
   N_group <- length(unique(bio_ind))
   Mu1 <- matrix(0, nrow=Gene_N, ncol=N_group)
-  bc <- rnrom(Cell_N, Nu, Sigma)
+  bc <- rnorm(Cell_N, Nu, Sigma)
 
   Group_Matrix <- matrix(0, ncol=Cell_N, nrow=N_group)
   for(i in 1:N_group){
