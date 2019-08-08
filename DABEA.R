@@ -10,22 +10,31 @@ MH_bc <- function(Y, Y_zero, Cell_N, Gene_N, bc, Lambda, Pi, Theta, Nu, Sigma, s
   Phi <- pnorm(Pi_bc)
   # integrate_z <- apply(Y_zero*(1-Phi)+Phi*Lambda_bc^Y*exp(-Lambda_bc), 2, prod)
   # poster_density <- exp(-(bc-Nu)^2/(2*Sigma^2))*integrate_z
-  
+  log_int_z <- matrix(0, ncol=Cell_N, nrow=Gene_N)
+  log_int_z[Y_zero] <- log(1+Phi[Y_zero]*(exp(-Lambda_bc[Y_zero])-1))
+  log_int_z[!Y_zero] <- log(Phi[!Y_zero])+Y[!Y_zero]*log(Lambda_bc[!Y_zero])-Lambda_bc[!Y_zero]
+  log_dense <- -(bc-Nu)^2/(2*Sigma^2)+colSums(log_int_z)
   for(i in 1:burn){
     bc_propose <- bc + rnorm(Cell_N, mean=0, sd=step)
-    Lambda_bc_propose <- sweep(Lambda, 2, exp(bc_propose), FUN='*')
-    Pi_bc_propose <- sweep(Pi, 2, bc_propose*Theta, FUN='+')
-    Phi_propose <- pnorm(Pi_bc_propose)
-    integrate_z <- apply((Y_zero*(1-Phi_propose)+Phi_propose*(Lambda_bc_propose/Lambda_bc)^Y*exp(-Lambda_bc_propose))/(Y_zero*(1-Phi)+Phi*exp(-Lambda_bc)), 2, prod)
+    Lambda_bc <- sweep(Lambda, 2, exp(bc_propose), FUN='*')
+    Pi_bc <- sweep(Pi, 2, bc_propose*Theta, FUN='+')
+    Phi <- pnorm(Pi_bc)
+    log_int_z[Y_zero] <- log(1+Phi[Y_zero]*(exp(-Lambda_bc[Y_zero])-1))
+    log_int_z[!Y_zero] <- log(Phi[!Y_zero])+Y[!Y_zero]*log(Lambda_bc[!Y_zero])-Lambda_bc[!Y_zero]
+    log_dense_propose <- -(bc_propose-Nu)^2/(2*Sigma^2)+colSums(log_int_z)
+    #integrate_z <- apply((Y_zero*(1-Phi_propose)+Phi_propose*(Lambda_bc_propose/Lambda_bc)^Y*exp(-Lambda_bc_propose))/(Y_zero*(1-Phi)+Phi*exp(-Lambda_bc)), 2, prod)
     #poster_density_propose <- exp(-(bc_propose-Nu)^2/(2*Sigma^2))*integrate_z
     #ratio <- poster_density_propose/poster_density
-    ratio <- exp((-(bc_propose-Nu)^2+(bc-Nu)^2)/(2*Sigma^2))*integrate_z
+    #ratio <- exp((-(bc_propose-Nu)^2+(bc-Nu)^2)/(2*Sigma^2))*integrate_z
+    log_ratio <- sapply(log_dense_propose - log_dense, FUN = function(x)min(x,0))
+    ratio <- exp(log_ratio)
     hidden <- runif(Cell_N)
     accept <- ratio>hidden
     bc[accept] <- bc_propose[accept]
-    Lambda_bc[,accept] <- Lambda_bc_propose[,accept]
-    Pi_bc[,accept] <- Pi_bc_propose[,accept]
-    Phi[,accept] <- Phi_propose[,accept]
+    # Lambda_bc[,accept] <- Lambda_bc_propose[,accept]
+    # Pi_bc[,accept] <- Pi_bc_propose[,accept]
+    # Phi[,accept] <- Phi_propose[,accept]
+    log_dense[accept] <- log_dense_propose[accept]
     #poster_density[ratio>hidden] <- poster_density_propose[ratio>hidden]
   }
   for(i in 1:K){
@@ -33,10 +42,14 @@ MH_bc <- function(Y, Y_zero, Cell_N, Gene_N, bc, Lambda, Pi, Theta, Nu, Sigma, s
     Lambda_bc_propose <- sweep(Lambda, 2, exp(bc_propose), FUN='*')
     Pi_bc_propose <- sweep(Pi, 2, bc_propose*Theta, FUN='+')
     Phi_propose <- pnorm(Pi_bc_propose)
-    integrate_z <- apply((Y_zero*(1-Phi_propose)+Phi_propose*(Lambda_bc_propose/Lambda_bc)^Y*exp(-Lambda_bc_propose))/(Y_zero*(1-Phi)+Phi*exp(-Lambda_bc)), 2, prod)
+    log_int_z[Y_zero] <- log(1+Phi_propose[Y_zero]*(exp(-Lambda_bc_propose[Y_zero])-1))
+    log_int_z[!Y_zero] <- log(Phi_propose[!Y_zero])+Y[!Y_zero]*log(Lambda_bc_propose[!Y_zero])-Lambda_bc_propose[!Y_zero]
+    log_dense_propose <- -(bc_propose-Nu)^2/(2*Sigma^2)+colSums(log_int_z)
+    #integrate_z <- apply((Y_zero*(1-Phi_propose)+Phi_propose*(Lambda_bc_propose/Lambda_bc)^Y*exp(-Lambda_bc_propose))/(Y_zero*(1-Phi)+Phi*exp(-Lambda_bc)), 2, prod)
     #poster_density_propose <- exp(-(bc_propose-Nu)^2/(2*Sigma^2))*integrate_z
     #ratio <- poster_density_propose/poster_density
-    ratio <- exp((-(bc_propose-Nu)^2+(bc-Nu)^2)/(2*Sigma^2))*integrate_z
+    log_ratio <- sapply(log_dense_propose - log_dense, FUN = function(x)min(x,0))
+    ratio <- exp(log_ratio)
     hidden <- runif(Cell_N)
     accept <- ratio>hidden
     bc[accept] <- bc_propose[accept]
@@ -44,6 +57,7 @@ MH_bc <- function(Y, Y_zero, Cell_N, Gene_N, bc, Lambda, Pi, Theta, Nu, Sigma, s
     Pi_bc[,accept] <- Pi_bc_propose[,accept]
     Phi[,accept] <- Phi_propose[,accept]
     #poster_density[ratio>hidden] <- poster_density_propose[ratio>hidden]
+    log_dense[accept] <- log_dense_propose[accept]
     bc_sample[,i] <- bc
     #Pi_bc <- sweep(Pi, 2, bc*Theta, FUN='+')
     #Phi <- pnorm(Pi_bc)
