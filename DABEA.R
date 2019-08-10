@@ -160,8 +160,8 @@ fitDABEA <- function(Y, tot_read, bat_ind, bio_ind, gene_len, step=1, burn=1000,
       Batch_Sigma <- (SumSquare-2*Batch_Nu*SumEach+Batch_N*Batch_Nu^2)/Batch_N
       jj <- jj + 1
     }
-    Nu <- rep(0, Cell_N)
-    Sigma <- rep(0, Cell_N)
+    # Nu <- rep(0, Cell_N)
+    # Sigma <- rep(0, Cell_N)
     for(batch in 1:length(unique(bat_ind))){
       batch_id <- unique(bat_ind)[batch]
       Nu[bat_ind==batch_id] <- Batch_Nu[batch]
