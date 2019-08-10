@@ -152,7 +152,7 @@ fitDABEA <- function(Y, tot_read, bat_ind, bio_ind, gene_len, step=1, burn=1000,
       Batch_Sigma <- c(Batch_Sigma, sd(batch_bc))
     }
     jj <- 0
-    while(jj<=10 & max(max(abs(Batch_Sigma0-Batch_Sigma)), max(max(abs(Batch_Nu0-Batch_Nu))))>=stop){
+    while(jj<=100 & max(abs(Batch_Sigma0-Batch_Sigma), abs(Batch_Nu0-Batch_Nu))>=stop){
       Batch_Sigma0 <- Batch_Sigma
       Batch_Nu0 <- Batch_Nu
       temp <- sum(Batch_Sigma*Batch_N)
