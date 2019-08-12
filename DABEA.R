@@ -106,6 +106,9 @@ fitDABEA <- function(Y, tot_read, bat_ind, bio_ind, gene_len, step=1, burn=1000,
   Lambda <- sweep(sweep(Mu, 1, gene_len, FUN='*')%*%Group_Matrix, 2, tot_read, FUN = '*')
   Pi <- sweep(sweep(matrix(Gamma, nrow=Gene_N, ncol=Cell_N), 2, Alpha*log(tot_read), FUN='+'), 1, Beta*log(gene_len), FUN='+')
   j <- 0
+  
+  bat_indexes <- unique(bat_ind)
+  N_bat <- length(bat_indexes)
   while(j<=max_iter & max(abs(Alpha1-Alpha), abs(Beta1-Beta), abs(Theta1-Theta), abs(Nu1-Nu), abs(Sigma1-Sigma), abs(Mu1-Mu))>stop){
     # E step
     MH <- MH_bc(Y, Y_zero, Cell_N, Gene_N, bc, Lambda, Pi, Theta, Nu, Sigma, step, burn, K)
@@ -133,41 +136,54 @@ fitDABEA <- function(Y, tot_read, bat_ind, bio_ind, gene_len, step=1, burn=1000,
     Alpha <- LM_Results$coefficients[[2]]
     Beta <- LM_Results$coefficients[[3]]
     Theta <- LM_Results$coefficients[[4]]
-    
-    SumAll <- sum(bc_sample)
-    SumEach <- c()
-    SumSquare <- c()
-    Batch_N <- c()
-    Batch_Nu <- c()
-    Batch_Nu0 <- rep(0, length(unique(bat_ind)))
-    Batch_Sigma <- c()
-    Batch_Sigma0 <- rep(1, length(unique(bat_ind)))
-    for(batch in 1:length(unique(bat_ind))){
-      batch_id <- unique(bat_ind)[batch]
+
+    for(batch in 1:N_bat){
+      batch_id <- bat_indexes[batch]
       batch_bc <- bc_sample[bat_ind==batch_id,]
-      SumEach <- c(SumEach, sum(batch_bc))
-      SumSquare <- c(SumSquare, sum(batch_bc^2))
-      Batch_N <- c(Batch_N, length(bat_ind==batch_id))
-      Batch_Nu <- c(Batch_Nu, mean(batch_bc))
-      Batch_Sigma <- c(Batch_Sigma, sd(batch_bc))
+      Nu[bat_ind==batch_id] <- mean(batch_bc)
+      Sigma[bat_ind==batch_id] <- sd(batch_bc)
     }
-    jj <- 0
-    while(jj<=100 & max(abs(Batch_Sigma0-Batch_Sigma), abs(Batch_Nu0-Batch_Nu))>=stop){
-      Batch_Sigma0 <- Batch_Sigma
-      Batch_Nu0 <- Batch_Nu
-      temp <- sum(Batch_Sigma*Batch_N)
-      Batch_Nu <- (SumEach-Batch_Sigma*Batch_N*SumAll/temp)/Batch_N
-      Batch_Sigma <- (SumSquare-2*Batch_Nu*SumEach+Batch_N*Batch_Nu^2)/Batch_N
-      jj <- jj + 1
-    }
-    # Nu <- rep(0, Cell_N)
-    # Sigma <- rep(0, Cell_N)
-    for(batch in 1:length(unique(bat_ind))){
-      batch_id <- unique(bat_ind)[batch]
-      Nu[bat_ind==batch_id] <- Batch_Nu[batch]
-      Sigma[bat_ind==batch_id] <- Batch_Sigma[batch]
-    }
+    # SumAll <- sum(bc_sample)
+    # SumEach <- c()
+    # SumSquare <- c()
+    # Batch_N <- c()
+    # Batch_Nu <- c()
+    # Batch_Nu0 <- rep(0, length(unique(bat_ind)))
+    # Batch_Sigma <- c()
+    # Batch_Sigma0 <- rep(1, length(unique(bat_ind)))
+    # for(batch in 1:length(unique(bat_ind))){
+    #   batch_id <- unique(bat_ind)[batch]
+    #   batch_bc <- bc_sample[bat_ind==batch_id,]
+    #   SumEach <- c(SumEach, sum(batch_bc))
+    #   SumSquare <- c(SumSquare, sum(batch_bc^2))
+    #   Batch_N <- c(Batch_N, length(bat_ind==batch_id))
+    #   Batch_Nu <- c(Batch_Nu, mean(batch_bc))
+    #   Batch_Sigma <- c(Batch_Sigma, sd(batch_bc))
+    # }
+    # jj <- 0
+    # while(jj<=100 & max(abs(Batch_Sigma0-Batch_Sigma), abs(Batch_Nu0-Batch_Nu))>=stop){
+    #   Batch_Sigma0 <- Batch_Sigma
+    #   Batch_Nu0 <- Batch_Nu
+    #   temp <- sum(Batch_Sigma*Batch_N)
+    #   Batch_Nu <- (SumEach-Batch_Sigma*Batch_N*SumAll/temp)/Batch_N
+    #   Batch_Sigma <- (SumSquare-2*Batch_Nu*SumEach+Batch_N*Batch_Nu^2)/Batch_N
+    #   jj <- jj + 1
+    # }
+    # # Nu <- rep(0, Cell_N)
+    # # Sigma <- rep(0, Cell_N)
+    # for(batch in 1:length(unique(bat_ind))){
+    #   batch_id <- unique(bat_ind)[batch]
+    #   Nu[bat_ind==batch_id] <- Batch_Nu[batch]
+    #   Sigma[bat_ind==batch_id] <- Batch_Sigma[batch]
+    # }
+    
     j <- j + 1
   }
+  
+  meanNu <- mean(Nu)
+  Nu = Nu - meanNu
+  Mu = Mu * exp(meanNu)
+  Gamma = Gamma + Theta*meanNu
+  
   return(list(Mu=Mu, Alpha=Alpha, Beta=Beta, Gamma=Gamma, Theta=Theta, Nu=Nu, Sigma=Sigma, bc=bc))
 }
