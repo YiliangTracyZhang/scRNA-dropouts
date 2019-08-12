@@ -72,7 +72,7 @@ MH_bc <- function(Y, Y_zero, Cell_N, Gene_N, bc, Lambda, Pi, Theta, Nu, Sigma, s
   return(list(bc_sample=bc_sample, ita=ita, Z=Z, Zexpbc=Zexpbc))
 }
 
-fitDABEA <- function(Y, tot_read, bat_ind, bio_ind, gene_len, step=1, burn=1000, K=1000, max_iter=200, stop=0.001){
+fitDABEA <- function(Y, tot_read, bat_ind, bio_ind, gene_len, step=0.01, burn=50, burn_start=500,K=500, max_iter=200, stop=0.001){
   gene_len <- gene_len/mean(gene_len)
   tot_read <- tot_read/mean(tot_read)
   Y_zero <- Y <= 0
@@ -105,10 +105,46 @@ fitDABEA <- function(Y, tot_read, bat_ind, bio_ind, gene_len, step=1, burn=1000,
   }
   Lambda <- sweep(sweep(Mu, 1, gene_len, FUN='*')%*%Group_Matrix, 2, tot_read, FUN = '*')
   Pi <- sweep(sweep(matrix(Gamma, nrow=Gene_N, ncol=Cell_N), 2, Alpha*log(tot_read), FUN='+'), 1, Beta*log(gene_len), FUN='+')
-  j <- 0
   
   bat_indexes <- unique(bat_ind)
   N_bat <- length(bat_indexes)
+  
+  # E step
+  MH <- MH_bc(Y, Y_zero, Cell_N, Gene_N, bc, Lambda, Pi, Theta, Nu, Sigma, step, burn_start, K)
+  bc_sample <- MH$bc_sample
+  ita <- MH$ita
+  Z <- MH$Z
+  Zexpbc <- MH$Zexpbc
+  #M step
+  Gamma1 <- Gamma
+  Alpha1 <- Alpha
+  Beta1 <- Beta
+  Theta1 <- Theta
+  Nu1 <- Nu
+  Sigma1 <- Sigma
+  Mu1 <- Mu
+  
+  Mu <- (Y*Z)%*%t(Group_Matrix)/sweep((sweep(Zexpbc, 2, tot_read, FUN='*')%*%t(Group_Matrix)), 1, gene_len, FUN='*')
+  
+  bc <- rowMeans(bc_sample)
+  ita <- ita/K
+  response <- as.vector(ita)
+  bcvector <- rep(bc, each=Gene_N)
+  LM_Results <- lm(response~logrc+loglg+bcvector)
+  Gamma <- LM_Results$coefficients[[1]]
+  Alpha <- LM_Results$coefficients[[2]]
+  Beta <- LM_Results$coefficients[[3]]
+  Theta <- LM_Results$coefficients[[4]]
+  
+  for(batch in 1:N_bat){
+          batch_id <- bat_indexes[batch]
+          batch_bc <- bc_sample[bat_ind==batch_id,]
+          Nu[bat_ind==batch_id] <- mean(batch_bc)
+          Sigma[bat_ind==batch_id] <- sd(batch_bc)
+  }
+  
+  j <- 1  
+  
   while(j<=max_iter & max(abs(Alpha1-Alpha), abs(Beta1-Beta), abs(Theta1-Theta), abs(Nu1-Nu), abs(Sigma1-Sigma), abs(Mu1-Mu))>stop){
     # E step
     MH <- MH_bc(Y, Y_zero, Cell_N, Gene_N, bc, Lambda, Pi, Theta, Nu, Sigma, step, burn, K)
@@ -125,7 +161,7 @@ fitDABEA <- function(Y, tot_read, bat_ind, bio_ind, gene_len, step=1, burn=1000,
     Sigma1 <- Sigma
     Mu1 <- Mu
     
-    Mu <- Y*Z%*%t(Group_Matrix)/sweep((sweep(Zexpbc, 2, tot_read, FUN='*')%*%t(Group_Matrix)), 1, gene_len, FUN='*')
+    Mu <- (Y*Z)%*%t(Group_Matrix)/sweep((sweep(Zexpbc, 2, tot_read, FUN='*')%*%t(Group_Matrix)), 1, gene_len, FUN='*')
     
     bc <- rowMeans(bc_sample)
     ita <- ita/K
