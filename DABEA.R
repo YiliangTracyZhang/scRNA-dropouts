@@ -125,7 +125,7 @@ fitDABEA <- function(Y, tot_read, bat_ind, bio_ind, gene_len, step=1, burn=1000,
     Sigma1 <- Sigma
     Mu1 <- Mu
     
-    Mu <- (Y*Z)%*%t(Group_Matrix)/sweep((sweep(Zexpbc, 2, tot_read, FUN='*')%*%t(Group_Matrix)), 1, gene_len, FUN='*')
+    Mu <- Y*Z%*%t(Group_Matrix)/sweep((sweep(Zexpbc, 2, tot_read, FUN='*')%*%t(Group_Matrix)), 1, gene_len, FUN='*')
     
     bc <- rowMeans(bc_sample)
     ita <- ita/K
@@ -181,6 +181,7 @@ fitDABEA <- function(Y, tot_read, bat_ind, bio_ind, gene_len, step=1, burn=1000,
   }
   
   meanNu <- mean(Nu)
+  bc = bc - meanNu
   Nu = Nu - meanNu
   Mu = Mu * exp(meanNu)
   Gamma = Gamma + Theta*meanNu
