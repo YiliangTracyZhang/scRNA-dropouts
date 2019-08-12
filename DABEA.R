@@ -94,8 +94,8 @@ fitDABEA <- function(Y, tot_read, bat_ind, bio_ind, gene_len, step=0.01, burn=50
   Nu1 <- rep(1, Cell_N)
   Sigma <- rep(1, Cell_N)
   Sigma1 <- rep(1, Cell_N)
-  Mu <- t(apply(Y, 1, FUN=function(x)aggregate(x, by=list(bio_ind), mean)[,2])) + 0.01
   N_group <- length(unique(bio_ind))
+  Mu <- matrix(apply(Y, 1, FUN=function(x)aggregate(x, by=list(bio_ind), mean)[,2]), ncol = N_group) + 0.01
   Mu1 <- matrix(0, nrow=Gene_N, ncol=N_group)
   bc <- rnorm(Cell_N, Nu, Sigma)
 
