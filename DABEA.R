@@ -72,9 +72,9 @@ MH_bc <- function(Y, Y_zero, Cell_N, Gene_N, bc, Lambda, Pi, Theta, Nu, Sigma, s
   return(list(bc_sample=bc_sample, ita=ita, Z=Z, Zexpbc=Zexpbc))
 }
 
-fitDABEA <- function(Y, tot_read, bat_ind, bio_ind, gene_len, step=0.01, burn=50, burn_start=500,K=500, max_iter=200, stop=0.001){
-  gene_len <- gene_len/mean(gene_len)
-  tot_read <- tot_read/mean(tot_read)
+fitDABEA <- function(Y, tot_read, bat_ind, bio_ind, gene_len, step=0.01, burn=50, burn_start=500, K=500, max_iter=200, stop=0.005){
+ gene_len <- gene_len/mean(gene_len)
+ tot_read <- tot_read/mean(tot_read)
   Y_zero <- Y <= 0
   Cell_N <- ncol(Y)
   Gene_N <- nrow(Y)
