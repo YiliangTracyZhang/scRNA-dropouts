@@ -61,11 +61,16 @@ MH_bc <- function(Y, Y_zero, Cell_N, Gene_N, bc, Lambda, Pi, Theta, Nu, Sigma, s
     bc_sample[,i] <- bc
     #Pi_bc <- sweep(Pi, 2, bc*Theta, FUN='+')
     #Phi <- pnorm(Pi_bc)
-    ita <- ita + Pi_bc + exp(-Pi_bc^2/2)/(sqrt(2*pi)*Phi)
+
     expbc <- exp(bc)
     #Lambda_bc <- sweep(Lambda, 2, expbc, FUN='*')
     explambda <- exp(-Lambda_bc)
+    ita <- ita + Pi_bc + exp(-Pi_bc^2/2)/(sqrt(2*pi)*Phi)   
+    # p_weight <- Phi*explambda/(Phi*explambda+1-Phi)
+    # p_weight[!Y_zero] <- 1
+    # ita <- ita + Pi_bc + p_weight*exp(-Pi_bc^2/2)/(sqrt(2*pi)*Phi) - (1-p_weight)*exp(-Pi_bc^2/2)/(sqrt(2*pi)*(1-Phi))  
     z_temp <- Phi*explambda/(1+Phi*(explambda-1))
+    z_temp[!Y_zero] <- 1
     Z <- Z + z_temp
     Zexpbc <- Zexpbc + sweep(z_temp, 2, expbc, FUN='*')
   }
@@ -96,6 +101,10 @@ fitDABEA <- function(Y, tot_read, bat_ind, bio_ind, gene_len, step=0.01, burn=50
   Sigma1 <- rep(1, Cell_N)
   N_group <- length(unique(bio_ind))
   Mu <- matrix(apply(Y, 1, FUN=function(x)aggregate(x, by=list(bio_ind), mean)[,2]), ncol = N_group) + 0.01
+  # Mu <- matrix(0,nrow=Gene_N,ncol=N_group)
+  # for(i in 1:N_group){
+  #         Mu[,i]<-matrix(Y[,bio_ind==unique(bio_ind)[i]],nrow = Gene_N) %*% (1/tot_read[bio_ind==unique(bio_ind)[i]] )* (1/gene_len)
+  # }
   Mu1 <- matrix(0, nrow=Gene_N, ncol=N_group)
   bc <- rnorm(Cell_N, Nu, Sigma)
 
@@ -113,8 +122,12 @@ fitDABEA <- function(Y, tot_read, bat_ind, bio_ind, gene_len, step=0.01, burn=50
   MH <- MH_bc(Y, Y_zero, Cell_N, Gene_N, bc, Lambda, Pi, Theta, Nu, Sigma, step, burn_start, K)
   bc_sample <- MH$bc_sample
   ita <- MH$ita
+  ita <- ita/K
   Z <- MH$Z
+  Z <- Z/K
   Zexpbc <- MH$Zexpbc
+  Zexpbc <- Zexpbc/K
+  
   #M step
   Gamma1 <- Gamma
   Alpha1 <- Alpha
@@ -127,7 +140,7 @@ fitDABEA <- function(Y, tot_read, bat_ind, bio_ind, gene_len, step=0.01, burn=50
   Mu <- (Y*Z)%*%t(Group_Matrix)/sweep((sweep(Zexpbc, 2, tot_read, FUN='*')%*%t(Group_Matrix)), 1, gene_len, FUN='*')
   
   bc <- rowMeans(bc_sample)
-  ita <- ita/K
+  # ita <- ita/K
   response <- as.vector(ita)
   bcvector <- rep(bc, each=Gene_N)
   LM_Results <- lm(response~logrc+loglg+bcvector)
