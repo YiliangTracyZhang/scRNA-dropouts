@@ -66,12 +66,11 @@ MH_bc <- function(Y, Y_zero, Cell_N, Gene_N, bc, Lambda, Pi, Theta, Nu, Sigma, s
     #Lambda_bc <- sweep(Lambda, 2, expbc, FUN='*')
     explambda <- exp(-Lambda_bc)
     ita <- ita + Pi_bc + exp(-Pi_bc^2/2)/(sqrt(2*pi)*Phi)   
-    # p_weight <- Phi*explambda/(Phi*explambda+1-Phi)
-    # p_weight[!Y_zero] <- 1
-    # ita <- ita + Pi_bc + p_weight*exp(-Pi_bc^2/2)/(sqrt(2*pi)*Phi) - (1-p_weight)*exp(-Pi_bc^2/2)/(sqrt(2*pi)*(1-Phi))  
+
     z_temp <- Phi*explambda/(1+Phi*(explambda-1))
     z_temp[!Y_zero] <- 1
     Z <- Z + z_temp
+    # ita <- ita + Pi_bc + z_temp*exp(-Pi_bc^2/2)/(sqrt(2*pi)*Phi) - (1-z_temp)*exp(-Pi_bc^2/2)/(sqrt(2*pi)*(1-Phi))  
     Zexpbc <- Zexpbc + sweep(z_temp, 2, expbc, FUN='*')
   }
   return(list(bc_sample=bc_sample, ita=ita, Z=Z, Zexpbc=Zexpbc))
