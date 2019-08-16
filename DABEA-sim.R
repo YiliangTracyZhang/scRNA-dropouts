@@ -122,6 +122,9 @@ fitDABEA <- function(Y, tot_read, bat_ind, bio_ind, gene_len, step=0.1, burn=50,
   
   Mu <- (Y*Z)%*%t(Group_Matrix)/sweep((sweep(Zexpbc, 2, tot_read, FUN='*')%*%t(Group_Matrix)), 1, gene_len, FUN='*')
   
+  Lambda <- sweep(sweep(Mu, 1, gene_len, FUN='*')%*%Group_Matrix, 2, tot_read, FUN = '*') ####
+  Pi <- sweep(sweep(matrix(Gamma, nrow=Gene_N, ncol=Cell_N), 2, Alpha*log(tot_read), FUN='+'), 1, Beta*log(gene_len), FUN='+') ###
+  
   bc <- rowMeans(bc_sample)
   # ita <- ita/K
   response <- as.vector(ita)
@@ -138,11 +141,11 @@ fitDABEA <- function(Y, tot_read, bat_ind, bio_ind, gene_len, step=0.1, burn=50,
           Nu[bat_ind==batch_id] <- mean(batch_bc)
           Sigma[bat_ind==batch_id] <- sd(batch_bc)
   }
-  meanNu <- mean(Nu)
-  bc = bc - meanNu
-  Nu = Nu - meanNu
-  Mu = Mu * exp(meanNu)
-  Gamma = Gamma + Theta*meanNu
+  # meanNu <- mean(Nu)
+  # bc = bc - meanNu
+  # Nu = Nu - meanNu
+  # Mu = Mu * exp(meanNu)
+  # Gamma = Gamma + Theta*meanNu
   j <- 1  
   
   print(c(date(),paste0('the', j , 'iteration')))
@@ -174,6 +177,9 @@ fitDABEA <- function(Y, tot_read, bat_ind, bio_ind, gene_len, step=0.1, burn=50,
     
     Mu <- (Y*Z)%*%t(Group_Matrix)/sweep((sweep(Zexpbc, 2, tot_read, FUN='*')%*%t(Group_Matrix)), 1, gene_len, FUN='*')
     
+    Lambda <- sweep(sweep(Mu, 1, gene_len, FUN='*')%*%Group_Matrix, 2, tot_read, FUN = '*') ####
+    Pi <- sweep(sweep(matrix(Gamma, nrow=Gene_N, ncol=Cell_N), 2, Alpha*log(tot_read), FUN='+'), 1, Beta*log(gene_len), FUN='+') ###
+    
     bc <- rowMeans(bc_sample)
     ita <- ita/K
     response <- as.vector(ita)
@@ -190,13 +196,12 @@ fitDABEA <- function(Y, tot_read, bat_ind, bio_ind, gene_len, step=0.1, burn=50,
       Nu[bat_ind==batch_id] <- mean(batch_bc)
       Sigma[bat_ind==batch_id] <- sd(batch_bc)
     }
-
-  meanNu <- mean(Nu)
-  bc = bc - meanNu
-  Nu = Nu - meanNu
-  Mu = Mu * exp(meanNu)
-  Gamma = Gamma + Theta*meanNu    
-  
+    # meanNu <- mean(Nu)
+    # bc = bc - meanNu
+    # Nu = Nu - meanNu
+    # Mu = Mu * exp(meanNu)
+    # Gamma = Gamma + Theta*meanNu
+    
     j <- j + 1
     
     print(c(date(),paste0('the', j , 'iteration')))
