@@ -244,7 +244,7 @@ fitDABEA <- function(Y, tot_read, bat_ind, bio_ind, gene_len, step=0.1, burn=50,
   print(unique(Sigma))
   
   #####dropout imputation
-  Y_impute <- Y + Lambda[Y_zero]
+  Y_impute <- Y + Lambda_bc[Y_zero]
   Z_matrix <- Z
   ##### batch effect sampling (stored for quality control)
   sampling <- bc_sample
@@ -253,4 +253,64 @@ fitDABEA <- function(Y, tot_read, bat_ind, bio_ind, gene_len, step=0.1, burn=50,
               Alpha=Alpha, Beta=Beta, Gamma=Gamma, Theta=Theta, Nu=Nu, Sigma=Sigma, 
               Y_impute = Y_impute, Z_matrix = Z_matrix,
               bc=bc, sampling = sampling))
+}
+
+
+#######################
+### quality control ###
+#######################
+
+qcDABEA <- function(sampling, alternative = 'right', level = 0.05){
+        
+        b_sample_mat <- sampling
+        sample_num <- length(as.vector(b_sample_mat))
+        Cell_N <- length(b_sample_mat[,1])
+        Sam_N <- length(b_sample_mat[1,])
+        
+        p_value_list <- c()
+        
+        if (alternative == 'right'){
+                level_ind <- as.integer((1 - level) * sample_num)
+                upper <- sort(b_sample_mat)[level_ind]
+                ind_mat <- b_sample_mat >= upper
+                sig_num <- rowSums(ind_mat)
+                for (i in 1:Cell_N){
+                        cont_table <- cbind(c(as.integer(sample_num * level), sample_num),
+                                            c(sig_num[i], Sam_N))
+                        p_value <- fisher.test(cont_table, alternative = 'less')$p.value
+                        p_value_list <- c(p_value_list, p_value)
+                }
+        }
+        
+        if (alternative == 'left'){
+                level_ind <- as.integer(level * sample_num)
+                lower <- sort(b_sample_mat)[level_ind]
+                ind_mat <- ifelse(b_sample_mat <= lower, 1, 0)
+                sig_num <- rowSums(ind_mat)
+                for (i in 1:Cell_N){
+                        cont_table <- cbind(c(as.integer(sample_num * level), sample_num),
+                                            c(sig_num[i], Sam_N))
+                        p_value <- fisher.test(cont_table, alternative = 'less')$p.value
+                        p_value_list <- c(p_value_list, p_value)
+                }
+        }
+        
+        if (alternative == 'two side'){
+                level_up <- as.integer((1 - level / 2) * sample_num)
+                level_low <- as.integer(level / 2 * sample_num)
+                upper <- sort(b_sample_mat)[level_up]
+                lower  <- sort(b_sample_mat)[level_low]
+                ind_mat <- b_sample_mat < lower | b_sample_mat 
+                sig_num <- rowSums(ind_mat)
+                for (i in 1:Cell_N){
+                        cont_table <- cbind(c(as.integer(sample_num * level), sample_num),
+                                            c(sig_num[i], Sam_N))
+                        p_value <- fisher.test(cont_table, alternative = 'less')$p.value
+                        p_value_list <- c(p_value_list, p_value)
+                }
+        }
+        pvalue_out <- data.frame(cbind(1:length(p_value), p_value))
+        names(pvalue_out) <- c('cell.num', 'p_value')
+        p_value_out <- pvalue_out[pvalue_out$p_value <= 0.05,]
+        return(p_value, p_value_out)
 }
