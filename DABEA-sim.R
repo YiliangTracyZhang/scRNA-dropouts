@@ -60,7 +60,7 @@ MH_bc <- function(Y, Y_zero, Cell_N, Gene_N, bc, Lambda, Pi, Theta, Nu, Sigma, s
     ita <- ita + Pi_bc + z_temp*exp(-Pi_bc^2/2)/(sqrt(2*pi)*Phi) - (1-z_temp)*exp(-Pi_bc^2/2)/(sqrt(2*pi)*(1-Phi))  
     Zexpbc <- Zexpbc + sweep(z_temp, 2, expbc, FUN='*')
   }
-  return(list(bc_sample=bc_sample, ita=ita, Z=Z, Zexpbc=Zexpbc))
+  return(list(bc_sample=bc_sample, ita=ita, Z=Z, Zexpbc=Zexpbc, Pi_bc = Pi_bc))
 }
 
 ## main function 
@@ -75,11 +75,11 @@ fitDABEA <- function(Y, tot_read, bat_ind, bio_ind, gene_len, step=0.1, burn=50,
   loglg <- rep(log(gene_len), Cell_N)
   
   #start point
-  Gamma <- -0.5
+  Gamma <- -1
   Gamma1 <- 1
-  Alpha <- 0.1
+  Alpha <- 0
   Alpha1 <- 0
-  Beta <- 0.1
+  Beta <- 0
   Beta1 <- 0
   Theta <- 1
   Theta1 <- 0
@@ -139,7 +139,6 @@ fitDABEA <- function(Y, tot_read, bat_ind, bio_ind, gene_len, step=0.1, burn=50,
   Mu <- (Y*Z)%*%t(Group_Matrix)/sweep((sweep(Zexpbc, 2, tot_read, FUN='*')%*%t(Group_Matrix)), 1, gene_len, FUN='*')
   
   Lambda <- sweep(sweep(Mu, 1, gene_len, FUN='*')%*%Group_Matrix, 2, tot_read, FUN = '*') #### 08/16 newly added
-  Pi <- sweep(sweep(matrix(Gamma, nrow=Gene_N, ncol=Cell_N), 2, Alpha*log(tot_read), FUN='+'), 1, Beta*log(gene_len), FUN='+') ### 08/16 newly added
   
   bc <- rowMeans(bc_sample)
   # ita <- ita/K
@@ -150,6 +149,8 @@ fitDABEA <- function(Y, tot_read, bat_ind, bio_ind, gene_len, step=0.1, burn=50,
   Alpha <- LM_Results$coefficients[[2]]
   Beta <- LM_Results$coefficients[[3]]
   Theta <- LM_Results$coefficients[[4]]
+  
+  Pi <- sweep(sweep(matrix(Gamma, nrow=Gene_N, ncol=Cell_N), 2, Alpha*log(tot_read), FUN='+'), 1, Beta*log(gene_len), FUN='+') ### 08/16 newly added
   
   for(batch in 1:N_bat){
           batch_id <- bat_indexes[batch]
@@ -194,7 +195,6 @@ fitDABEA <- function(Y, tot_read, bat_ind, bio_ind, gene_len, step=0.1, burn=50,
     Mu <- (Y*Z)%*%t(Group_Matrix)/sweep((sweep(Zexpbc, 2, tot_read, FUN='*')%*%t(Group_Matrix)), 1, gene_len, FUN='*')
     
     Lambda <- sweep(sweep(Mu, 1, gene_len, FUN='*')%*%Group_Matrix, 2, tot_read, FUN = '*') ####
-    Pi <- sweep(sweep(matrix(Gamma, nrow=Gene_N, ncol=Cell_N), 2, Alpha*log(tot_read), FUN='+'), 1, Beta*log(gene_len), FUN='+') ###
     
     bc <- rowMeans(bc_sample)
     ita <- ita/K
@@ -205,6 +205,8 @@ fitDABEA <- function(Y, tot_read, bat_ind, bio_ind, gene_len, step=0.1, burn=50,
     Alpha <- LM_Results$coefficients[[2]]
     Beta <- LM_Results$coefficients[[3]]
     Theta <- LM_Results$coefficients[[4]]
+    
+    Pi <- sweep(sweep(matrix(Gamma, nrow=Gene_N, ncol=Cell_N), 2, Alpha*log(tot_read), FUN='+'), 1, Beta*log(gene_len), FUN='+') ###
 
     for(batch in 1:N_bat){
       batch_id <- bat_indexes[batch]
