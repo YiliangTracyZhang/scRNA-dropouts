@@ -251,7 +251,9 @@ fitDABEA <- function(Y, tot_read, bat_ind, bio_ind, gene_len, step=0.1, burn=50,
   print(unique(Sigma))
   
   #####dropout imputation
-  Y_impute <- Y + MH$Lambda_bc*Y_zero
+  impute <- MH$Lambda_bc
+  impute[!Y_zero] <- 0
+  Y_impute <- Y + impute
   Z_matrix <- Z
   ##### batch effect sampling (stored for quality control)
   sampling <- bc_sample
