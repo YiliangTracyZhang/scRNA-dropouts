@@ -65,7 +65,7 @@ MH_bc <- function(Y, Y_zero, Cell_N, Gene_N, bc, Lambda, Pi, Theta, Nu, Sigma, s
 
 ## main function 
 
-fitDABEA <- function(Y, tot_read, bat_ind, bio_ind, gene_len, step=0.1, burn=50, burn_start=500, K=500, max_iter=200, stop=0.001){
+fitDABEA <- function(Y, tot_read, bat_ind, bio_ind, gene_len, step=0.1, burn=50, burn_start=500, K=500, max_iter=200, stop=0.005){
  # gene_len <- gene_len/mean(gene_len)
  # tot_read <- tot_read/mean(tot_read)
   Y_zero <- Y <= 0
@@ -75,12 +75,12 @@ fitDABEA <- function(Y, tot_read, bat_ind, bio_ind, gene_len, step=0.1, burn=50,
   loglg <- rep(log(gene_len), Cell_N)
   
   #start point
-  Gamma <- -1
+  Gamma <- 0
   Gamma1 <- 1
   Alpha <- 0
-  Alpha1 <- 0
+  Alpha1 <- 0.1
   Beta <- 0
-  Beta1 <- 0
+  Beta1 <- 0.1
   Theta <- 1
   Theta1 <- 0
   Nu <- rep(0, Cell_N)
@@ -176,7 +176,7 @@ fitDABEA <- function(Y, tot_read, bat_ind, bio_ind, gene_len, step=0.1, burn=50,
   print(unique(Nu))
   print(unique(Sigma))
   
-  while(j<=max_iter & max(abs(Alpha1-Alpha), abs(Beta1-Beta), abs(Theta1-Theta), abs(Nu1-Nu), abs(Sigma1-Sigma))>stop){
+  while(j<=max_iter & max(abs(Alpha1-Alpha), abs(Beta1-Beta), abs(Theta1-Theta), abs(Nu1-Nu), abs(Sigma1-Sigma),abs(Mu-Mu1))>stop){
     # E step
     MH <- MH_bc(Y, Y_zero, Cell_N, Gene_N, bc, Lambda, Pi, Theta, Nu, Sigma, step, burn, K)
     bc_sample <- MH$bc_sample
