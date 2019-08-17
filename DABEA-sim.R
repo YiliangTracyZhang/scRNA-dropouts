@@ -60,12 +60,12 @@ MH_bc <- function(Y, Y_zero, Cell_N, Gene_N, bc, Lambda, Pi, Theta, Nu, Sigma, s
     ita <- ita + Pi_bc + z_temp*exp(-Pi_bc^2/2)/(sqrt(2*pi)*Phi) - (1-z_temp)*exp(-Pi_bc^2/2)/(sqrt(2*pi)*(1-Phi))  
     Zexpbc <- Zexpbc + sweep(z_temp, 2, expbc, FUN='*')
   }
-  return(list(bc_sample=bc_sample, ita=ita, Z=Z, Zexpbc=Zexpbc, Pi_bc = Pi_bc))
+  return(list(bc_sample=bc_sample, ita=ita, Z=Z, Zexpbc=Zexpbc, Pi_bc = Pi_bc, Lambda_bc = Lambda_bc))
 }
 
 ## main function 
 
-fitDABEA <- function(Y, tot_read, bat_ind, bio_ind, gene_len, step=0.1, burn=50, burn_start=500, K=500, max_iter=200, stop=0.01){
+fitDABEA <- function(Y, tot_read, bat_ind, bio_ind, gene_len, step=0.1, burn=50, burn_start=500, K=500, max_iter=200, stop=0.001){
  # gene_len <- gene_len/mean(gene_len)
  # tot_read <- tot_read/mean(tot_read)
   Y_zero <- Y <= 0
@@ -251,7 +251,7 @@ fitDABEA <- function(Y, tot_read, bat_ind, bio_ind, gene_len, step=0.1, burn=50,
   print(unique(Sigma))
   
   #####dropout imputation
-  Y_impute <- Y + Lambda_bc[Y_zero]
+  Y_impute <- Y + MH$Lambda_bc*Y_zero
   Z_matrix <- Z
   ##### batch effect sampling (stored for quality control)
   sampling <- bc_sample
