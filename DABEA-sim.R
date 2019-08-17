@@ -233,6 +233,11 @@ fitDABEA <- function(Y, tot_read, bat_ind, bio_ind, gene_len, step=0.1, burn=50,
     
     j <- j + 1
   }
+  meanNu <- mean(Nu)
+  bc = bc - meanNu
+  Nu = Nu - meanNu
+  Mu = Mu * exp(meanNu)
+  Gamma = Gamma + Theta*meanNu
   
   print(paste0(j,' iterations in total'))
   print(c('error', max(abs(Alpha1-Alpha), abs(Beta1-Beta), abs(Theta1-Theta), abs(Nu1-Nu), abs(Sigma1-Sigma))))
