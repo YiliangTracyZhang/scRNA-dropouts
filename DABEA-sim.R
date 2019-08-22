@@ -250,6 +250,7 @@ fitDABEA <- function(Y, tot_read, bat_ind, bio_ind, gene_len, step=0.1, burn=50,
   
   #####dropout imputation
   Z_matrix <- Z
+  sampling <- bc_sample
   
   Pi_new <- sweep(sweep(matrix(Gamma, nrow=Gene_N, ncol=Cell_N), 2, Alpha*log(tot_read), FUN='+'), 1, Beta*log(gene_len), FUN='+')
   Phi_new <- pnorm(Pi_new)
