@@ -75,11 +75,11 @@ fitDABEA <- function(Y, tot_read, bat_ind, bio_ind, gene_len, step=0.1, burn=50,
   loglg <- rep(log(gene_len), Cell_N)
   
   #start point
-  Gamma <- 0
+  Gamma <- -0.5
   Gamma1 <- 1
-  Alpha <- 0
+  Alpha <- 0.1
   Alpha1 <- 0.1
-  Beta <- 0
+  Beta <- 0.1
   Beta1 <- 0.1
   Theta <- 1
   Theta1 <- 0
@@ -89,7 +89,7 @@ fitDABEA <- function(Y, tot_read, bat_ind, bio_ind, gene_len, step=0.1, burn=50,
   Sigma1 <- rep(1, Cell_N)
   N_group <- length(unique(bio_ind))
   # for real data
-  # Mu <- matrix(apply(Y, 1, FUN=function(x)aggregate(x, by=list(bio_ind), mean)[,2]), ncol = N_group) + 0.01 ##
+  # Mu <- matrix(apply(Y, 1, FUN=function(x)aggregate(x, by=list(bio_ind), mean)[,2]), ncol = N_group) + .machine$double.eps
   # for simulated data
   Mu <- matrix(0,nrow=Gene_N,ncol=N_group)
   for(i in 1:N_group){
@@ -107,7 +107,7 @@ fitDABEA <- function(Y, tot_read, bat_ind, bio_ind, gene_len, step=0.1, burn=50,
   Pi <- sweep(sweep(matrix(Gamma, nrow=Gene_N, ncol=Cell_N), 2, Alpha*log(tot_read), FUN='+'), 1, Beta*log(gene_len), FUN='+')
   
   bat_indexes <- unique(bat_ind)
-  N_bat <- length(bat_indexes)
+  N_bat <- length(unique(bat_ind))
   
   # E step
   MH <- MH_bc(Y, Y_zero, Cell_N, Gene_N, bc, Lambda, Pi, Theta, Nu, Sigma, step, burn_start, K)
@@ -121,10 +121,10 @@ fitDABEA <- function(Y, tot_read, bat_ind, bio_ind, gene_len, step=0.1, burn=50,
   
        #####################
   # observe the traceplot
-  trace <- MH$bc_sample
-  trace_1 <- trace[1,]
-  p <- plot(x=1:length(trace_1), y=trace_1, type = 'n', main = paste0('trace plot for 1 iteration'), ylab = 'value', xlab = 'sampling times') + lines(x = 1:length(trace_1), y = trace_1)  
-  print(p)
+  # trace <- MH$bc_sample
+  # trace_1 <- trace[1,]
+  # p <- plot(x=1:length(trace_1), y=trace_1, type = 'n', main = paste0('trace plot for 1 iteration'), ylab = 'value', xlab = 'sampling times') + lines(x = 1:length(trace_1), y = trace_1)  
+  # print(p)
         ######################
   
   #M step
@@ -158,23 +158,19 @@ fitDABEA <- function(Y, tot_read, bat_ind, bio_ind, gene_len, step=0.1, burn=50,
           Nu[bat_ind==batch_id] <- mean(batch_bc)
           Sigma[bat_ind==batch_id] <- sd(batch_bc)
   }
-  # meanNu <- mean(Nu)
-  # bc = bc - meanNu
-  # Nu = Nu - meanNu
-  # Mu = Mu * exp(meanNu)
-  # Gamma = Gamma + Theta*meanNu
+
   j <- 1  
   
-  print(c(date(),paste0('the', j , 'iteration')))
-  print(c('error', max(abs(Alpha1-Alpha), abs(Beta1-Beta), abs(Theta1-Theta), abs(Nu1-Nu), abs(Sigma1-Sigma))))
-  print(c('Mu error', max(abs(Mu1-Mu))))
-  print(Mu[1:10,])
-  print(Alpha)
-  print(Beta)
-  print(Gamma)
-  print(Theta)
-  print(unique(Nu))
-  print(unique(Sigma))
+  # print(c(date(),paste0('the', j , 'iteration')))
+  # print(c('error', max(abs(Alpha1-Alpha), abs(Beta1-Beta), abs(Theta1-Theta), abs(Nu1-Nu), abs(Sigma1-Sigma))))
+  # print(c('Mu error', max(abs(Mu1-Mu))))
+  # print(Mu[1:10,])
+  # print(Alpha)
+  # print(Beta)
+  # print(Gamma)
+  # print(Theta)
+  # print(unique(Nu))
+  # print(unique(Sigma))
   
   while(j<=max_iter & max(abs(Alpha1-Alpha), abs(Beta1-Beta), abs(Theta1-Theta), abs(Nu1-Nu), abs(Sigma1-Sigma),abs(Mu-Mu1))>stop){
     # E step
@@ -183,6 +179,13 @@ fitDABEA <- function(Y, tot_read, bat_ind, bio_ind, gene_len, step=0.1, burn=50,
     ita <- MH$ita
     Z <- MH$Z
     Zexpbc <- MH$Zexpbc
+    #####################
+    # observe the traceplot
+    # trace <- MH$bc_sample
+    # trace_1 <- trace[1,]
+    # p <- plot(x=1:length(trace_1), y=trace_1, type = 'n', main = paste0('trace plot for', j+1,'iteration'), ylab = 'value', xlab = 'sampling times') + lines(x = 1:length(trace_1), y = trace_1)  
+    # print(p)
+    ######################
     #M step
     Gamma1 <- Gamma
     Alpha1 <- Alpha
@@ -214,24 +217,19 @@ fitDABEA <- function(Y, tot_read, bat_ind, bio_ind, gene_len, step=0.1, burn=50,
       Nu[bat_ind==batch_id] <- mean(batch_bc)
       Sigma[bat_ind==batch_id] <- sd(batch_bc)
     }
-    # meanNu <- mean(Nu)
-    # bc = bc - meanNu
-    # Nu = Nu - meanNu
-    # Mu = Mu * exp(meanNu)
-    # Gamma = Gamma + Theta*meanNu
+
+    j <- j + 1   
+    # print(c(date(),paste0('the', j , 'iteration')))
+    # print(c('error', max(abs(Alpha1-Alpha), abs(Beta1-Beta), abs(Theta1-Theta), abs(Nu1-Nu), abs(Sigma1-Sigma))))
+    # print(c('Mu error', max(abs(Mu1-Mu))))
+    # print(Mu[1:10,])
+    # print(Alpha)
+    # print(Beta)
+    # print(Gamma)
+    # print(Theta)
+    # print(unique(Nu))
+    # print(unique(Sigma))
     
-    print(c(date(),paste0('the', j , 'iteration')))
-    print(c('error', max(abs(Alpha1-Alpha), abs(Beta1-Beta), abs(Theta1-Theta), abs(Nu1-Nu), abs(Sigma1-Sigma))))
-    print(c('Mu error', max(abs(Mu1-Mu))))
-    print(Mu[1:10,])
-    print(Alpha)
-    print(Beta)
-    print(Gamma)
-    print(Theta)
-    print(unique(Nu))
-    print(unique(Sigma))
-    
-    j <- j + 1
   }
   meanNu <- mean(Nu)
   bc = bc - meanNu
@@ -239,29 +237,35 @@ fitDABEA <- function(Y, tot_read, bat_ind, bio_ind, gene_len, step=0.1, burn=50,
   Mu = Mu * exp(meanNu)
   Gamma = Gamma + Theta*meanNu
   
-  print(paste0(j,' iterations in total'))
-  print(c('error', max(abs(Alpha1-Alpha), abs(Beta1-Beta), abs(Theta1-Theta), abs(Nu1-Nu), abs(Sigma1-Sigma))))
-  print(c('Mu error', max(abs(Mu1-Mu))))
-  print(Mu[1:10,])
-  print(Alpha)
-  print(Beta)
-  print(Gamma)
-  print(Theta)
-  print(unique(Nu))
-  print(unique(Sigma))
+  # print(paste0(j,' iterations in total'))
+  # print(c('error', max(abs(Alpha1-Alpha), abs(Beta1-Beta), abs(Theta1-Theta), abs(Nu1-Nu), abs(Sigma1-Sigma))))
+  # print(c('Mu error', max(abs(Mu1-Mu))))
+  # print(Mu[1:10,])
+  # print(Alpha)
+  # print(Beta)
+  # print(Gamma)
+  # print(Theta)
+  # print(unique(Nu))
+  # print(unique(Sigma))
   
   #####dropout imputation
-  impute <- MH$Lambda_bc
-  impute[!Y_zero] <- 0
-  Y_impute <- Y + impute
   Z_matrix <- Z
-  ##### batch effect sampling (stored for quality control)
-  sampling <- bc_sample
   
+  Pi_new <- sweep(sweep(matrix(Gamma, nrow=Gene_N, ncol=Cell_N), 2, Alpha*log(tot_read), FUN='+'), 1, Beta*log(gene_len), FUN='+')
+  Phi_new <- pnorm(Pi_new)
+ 
+  Z_mat <- Phi_new*Lambda / (1+Phi_new*(Lambda-1))
+  Z_mat[!Y_zero] <- 1    
+  
+  impute <- Lambda*(1-Z_mat)
+  impute[!Y_zero] <- 0
+  Y.adj <- sweep(Y, 2, 1/exp(bc), FUN = '*')
+  Y_impute <- Y.adj + impute  
   return(list(Mu=Mu, 
               Alpha=Alpha, Beta=Beta, Gamma=Gamma, Theta=Theta, Nu=Nu, Sigma=Sigma, 
               Y_impute = Y_impute, Z_matrix = Z_matrix,
-              bc=bc, sampling = sampling))
+               bc=bc, sampling = sampling
+              ))
 }
 
 
