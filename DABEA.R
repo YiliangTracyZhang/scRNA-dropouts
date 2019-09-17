@@ -191,40 +191,6 @@ fitDABEA <- function(Y, tot_read, bat_ind, bio_ind, gene_len, step=0.01, burn=50
       Nu[bat_ind==batch_id] <- mean(batch_bc)
       Sigma[bat_ind==batch_id] <- sd(batch_bc)
     }
-    # SumAll <- sum(bc_sample)
-    # SumEach <- c()
-    # SumSquare <- c()
-    # Batch_N <- c()
-    # Batch_Nu <- c()
-    # Batch_Nu0 <- rep(0, length(unique(bat_ind)))
-    # Batch_Sigma <- c()
-    # Batch_Sigma0 <- rep(1, length(unique(bat_ind)))
-    # for(batch in 1:length(unique(bat_ind))){
-    #   batch_id <- unique(bat_ind)[batch]
-    #   batch_bc <- bc_sample[bat_ind==batch_id,]
-    #   SumEach <- c(SumEach, sum(batch_bc))
-    #   SumSquare <- c(SumSquare, sum(batch_bc^2))
-    #   Batch_N <- c(Batch_N, length(bat_ind==batch_id))
-    #   Batch_Nu <- c(Batch_Nu, mean(batch_bc))
-    #   Batch_Sigma <- c(Batch_Sigma, sd(batch_bc))
-    # }
-    # jj <- 0
-    # while(jj<=100 & max(abs(Batch_Sigma0-Batch_Sigma), abs(Batch_Nu0-Batch_Nu))>=stop){
-    #   Batch_Sigma0 <- Batch_Sigma
-    #   Batch_Nu0 <- Batch_Nu
-    #   temp <- sum(Batch_Sigma*Batch_N)
-    #   Batch_Nu <- (SumEach-Batch_Sigma*Batch_N*SumAll/temp)/Batch_N
-    #   Batch_Sigma <- (SumSquare-2*Batch_Nu*SumEach+Batch_N*Batch_Nu^2)/Batch_N
-    #   jj <- jj + 1
-    # }
-    # # Nu <- rep(0, Cell_N)
-    # # Sigma <- rep(0, Cell_N)
-    # for(batch in 1:length(unique(bat_ind))){
-    #   batch_id <- unique(bat_ind)[batch]
-    #   Nu[bat_ind==batch_id] <- Batch_Nu[batch]
-    #   Sigma[bat_ind==batch_id] <- Batch_Sigma[batch]
-    # }
-    
     j <- j + 1
   }
   
