@@ -3,6 +3,7 @@
 ####################################
 
 MH_bg <- function(Y, Y_zero, Cell_N, Gene_N, N_batch, batch_name, bat_ind, bg, Lambda, Pi, Theta, Nu, Sigma, step, burn, K){
+  bg_sample  <- matrix(0, ncol=K, nrow=Gene_N) # record the samples
   bg_sum <- matrix(0, ncol=N_batch, nrow=Gene_N)
   bgsq_sum <- rep(0, N_batch)
   ita <- matrix(0, ncol=Cell_N, nrow=Gene_N)
@@ -66,6 +67,7 @@ MH_bg <- function(Y, Y_zero, Cell_N, Gene_N, N_batch, batch_name, bat_ind, bg, L
     hidden <- matrix(runif(N_batch*Gene_N), ncol=N_batch)
     accept <- ratio>hidden
     bg[accept] <- bg_propose[accept]
+    bg_sample[,i] <- bg # record the samples
     for(batches in 1:N_batch){
       Lambda_bg[accept[,batches], bat_ind == batch_name[batches]] <- Lambda_bg_propose[accept[,batches],bat_ind == batch_name[batches]]
       Pi_bg[accept[,batches], bat_ind == batch_name[batches]] <- Pi_bg_propose[accept[,batches], bat_ind == batch_name[batches]]
@@ -84,7 +86,8 @@ MH_bg <- function(Y, Y_zero, Cell_N, Gene_N, N_batch, batch_name, bat_ind, bg, L
       bgsq_sum[batches] <- bgsq_sum[batches] + sum(bg[,batches]^2)
     }
   }
-  return(list(bg_sum=bg_sum, bgsq_sum=bgsq_sum, ita=ita, Zexpbc=Zexpbc, Z=Z))
+  # return(list(bg_sum=bg_sum, bgsq_sum=bgsq_sum, ita=ita, Zexpbc=Zexpbc, Z=Z))
+  return(list(bg_sum=bg_sum, bgsq_sum=bgsq_sum, ita=ita, Zexpbg=Zexpbg, Z=Z, bg_sample=bg_sample))
 }
 
 #####################
@@ -133,8 +136,10 @@ fitSCRIBE <- function(Y, bat_ind, bio_ind, step=0.1, burn=50, burn_start=500, K=
   Lambda <- sweep(sweep(Mu, 1, gene_len, FUN='*')%*%Group_Matrix, 2, tot_read, FUN = '*')
   Pi <- matrix(0, ncol=Cell_N, nrow=Gene_N)
   for(batches in 1:N_batch){
-    Pi[, bat_ind == batch_name[batches]] <- Gamma[batches] + sweep(sweep(Pi, 2, Alpha[batches]*log(tot_read[bat_ind==batch_name[batches]], FUN="+")), 1, Beta[batches]*log(gene_len), FUN="+")
-  }
+    # Pi[, bat_ind == batch_name[batches]] <- Gamma[batches] + sweep(sweep(Pi, 2, Alpha[batches]*log(tot_read[bat_ind==batch_name[batches]], FUN="+")), 1, Beta[batches]*log(gene_len), FUN="+")
+   Pi[, bat_ind == batch_name[batches]] <- Gamma[batches] + sweep(sweep(Pi[, bat_ind == batch_name[batches]], 2, Alpha[batches]*log(tot_read[bat_ind==batch_name[batches]]), FUN="+"), 1, Beta[batches]*log(gene_len), FUN="+")
+          
+            }
   
   # E step
   MH <- MH_bg(Y, Y_zero, Cell_N, Gene_N, N_batch, batch_name, bat_ind, bg, Lambda, Pi, Theta, Nu, Sigma, step, burn_start, K)
@@ -175,7 +180,8 @@ fitSCRIBE <- function(Y, bat_ind, bio_ind, step=0.1, burn=50, burn_start=500, K=
   }
   Lambda <- sweep(sweep(Mu, 1, gene_len, FUN='*')%*%Group_Matrix, 2, tot_read, FUN = '*')
   for(batches in 1:N_batch){
-    Pi[, bat_ind == batch_name[batches]] <- Gamma[batches] + sweep(sweep(Pi, 2, Alpha[batches]*log(tot_read[bat_ind==batch_name[batches]], FUN="+")), 1, Beta[batches]*log(gene_len), FUN="+")
+    # Pi[, bat_ind == batch_name[batches]] <- Gamma[batches] + sweep(sweep(Pi, 2, Alpha[batches]*log(tot_read[bat_ind==batch_name[batches]], FUN="+")), 1, Beta[batches]*log(gene_len), FUN="+")
+  Pi[, bat_ind == batch_name[batches]] <- Gamma[batches] + sweep(sweep(Pi[, bat_ind == batch_name[batches]], 2, Alpha[batches]*log(tot_read[bat_ind==batch_name[batches]]), FUN="+"), 1, Beta[batches]*log(gene_len), FUN="+")
   }
   j <- 1
   while(j<=max_iter & max(abs(Alpha1-Alpha), abs(Beta1-Beta), abs(Theta1-Theta), abs(Nu1-Nu), abs(Sigma1-Sigma),abs(Mu-Mu1))>stop){
@@ -218,7 +224,9 @@ fitSCRIBE <- function(Y, bat_ind, bio_ind, step=0.1, burn=50, burn_start=500, K=
     }
     Lambda <- sweep(sweep(Mu, 1, gene_len, FUN='*')%*%Group_Matrix, 2, tot_read, FUN = '*')
     for(batches in 1:N_batch){
-      Pi[, bat_ind == batch_name[batches]] <- Gamma[batches] + sweep(sweep(Pi, 2, Alpha[batches]*log(tot_read[bat_ind==batch_name[batches]], FUN="+")), 1, Beta[batches]*log(gene_len), FUN="+")
+      # Pi[, bat_ind == batch_name[batches]] <- Gamma[batches] + sweep(sweep(Pi, 2, Alpha[batches]*log(tot_read[bat_ind==batch_name[batches]], FUN="+")), 1, Beta[batches]*log(gene_len), FUN="+")
+     Pi[, bat_ind == batch_name[batches]] <- Gamma[batches] + sweep(sweep(Pi[, bat_ind == batch_name[batches]], 2, Alpha[batches]*log(tot_read[bat_ind==batch_name[batches]]), FUN="+"), 1, Beta[batches]*log(gene_len), FUN="+")
+            
     }
     cat("iteration", j)
     j <- j + 1
