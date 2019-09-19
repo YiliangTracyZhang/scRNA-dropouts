@@ -133,7 +133,7 @@ fitSCRIBE <- function(Y, bat_ind, bio_ind, step=0.1, burn=50, burn_start=500, K=
   Lambda <- sweep(sweep(Mu, 1, gene_len, FUN='*')%*%Group_Matrix, 2, tot_read, FUN = '*')
   Pi <- matrix(0, ncol=Cell_N, nrow=Gene_N)
   for(batches in 1:N_batch){
-    Pi[, bat_ind == batch_name[batches]] <- Gamma[batches] + sweep(sweep(Pi, 2, Alpha[batches]*log(tot_read[bat_ind==batch_name[batches]], FUN="+")), 1, Beta[batches]*log(gene_len), FUN="+")
+    Pi[, bat_ind == batch_name[batches]] <- Gamma[batches] + sweep(sweep(Pi[, bat_ind == batch_name[batches]], 2, Alpha[batches]*log(tot_read[bat_ind==batch_name[batches]]), FUN="+"), 1, Beta[batches]*log(gene_len), FUN="+")
   }
   
   # E step
@@ -175,7 +175,7 @@ fitSCRIBE <- function(Y, bat_ind, bio_ind, step=0.1, burn=50, burn_start=500, K=
   }
   Lambda <- sweep(sweep(Mu, 1, gene_len, FUN='*')%*%Group_Matrix, 2, tot_read, FUN = '*')
   for(batches in 1:N_batch){
-    Pi[, bat_ind == batch_name[batches]] <- Gamma[batches] + sweep(sweep(Pi, 2, Alpha[batches]*log(tot_read[bat_ind==batch_name[batches]], FUN="+")), 1, Beta[batches]*log(gene_len), FUN="+")
+    Pi[, bat_ind == batch_name[batches]] <- Gamma[batches] + sweep(sweep(Pi[, bat_ind == batch_name[batches]], 2, Alpha[batches]*log(tot_read[bat_ind==batch_name[batches]]), FUN="+"), 1, Beta[batches]*log(gene_len), FUN="+")
   }
   j <- 1
   while(j<=max_iter & max(abs(Alpha1-Alpha), abs(Beta1-Beta), abs(Theta1-Theta), abs(Nu1-Nu), abs(Sigma1-Sigma),abs(Mu-Mu1))>stop){
@@ -218,7 +218,7 @@ fitSCRIBE <- function(Y, bat_ind, bio_ind, step=0.1, burn=50, burn_start=500, K=
     }
     Lambda <- sweep(sweep(Mu, 1, gene_len, FUN='*')%*%Group_Matrix, 2, tot_read, FUN = '*')
     for(batches in 1:N_batch){
-      Pi[, bat_ind == batch_name[batches]] <- Gamma[batches] + sweep(sweep(Pi, 2, Alpha[batches]*log(tot_read[bat_ind==batch_name[batches]], FUN="+")), 1, Beta[batches]*log(gene_len), FUN="+")
+      Pi[, bat_ind == batch_name[batches]] <- Gamma[batches] + sweep(sweep(Pi[, bat_ind == batch_name[batches]], 2, Alpha[batches]*log(tot_read[bat_ind==batch_name[batches]]), FUN="+"), 1, Beta[batches]*log(gene_len), FUN="+")
     }
     cat("iteration", j)
     j <- j + 1
