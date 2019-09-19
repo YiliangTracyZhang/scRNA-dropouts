@@ -239,10 +239,27 @@ fitSCRIBE <- function(Y, bat_ind, bio_ind, step=0.1, burn=50, burn_start=500, K=
   
   # dropout imputation
   cat("start imputing ... ...")
-  lowerp <- ppois(q=Y-1, lambda=Lambda_bg)
-  upperp <- ppois(q=Y, lambda=Lambda_bg)
-  
-  
+  Y_impute <- matrix(0, ncol=Cell_N, nrow=Gene_N)
+  for(cells in 1:Cell_N){
+    for(genes in 1:Gene_N){
+      Y_cg <- Y[genes, cells]
+      lambda_bcg <- Lambda_bg[genes, cells]
+      lambda_cg <- Lambda[genes, cells]
+      lowerp <- ppois(q=Y_cg - 1, lambda=lambda_bcg)
+      upperp <- ppois(q=Y_cg, lambda=lambda_bcg)
+      lowerq <- qpois(p=lowerp, lambda=lambda_cg)
+      upperq <- qpois(p=upperp, lambda=lambda_cg)
+      sumweight <- upperp - lowerp
+      tempsum <- 0
+      for(imp in lowerq:upperq){
+        low1p <- max(ppois(q=imp-1, lambda=lambda_cg), lowerp)
+        up1p <- min(ppois(q=imp, lambda=lambda_cg), upperp)
+        tempsum <- tempsum + imp*(up1p - low1p)
+      }
+      Y_impute[genes, cells] = tempsum/sumweight
+    }
+  }
+  Y_impute <- Y_impute * Z + Lambda * (1 - Z)
   return(list(Mu=Mu, Alpha=Alpha, Beta=Beta, Gamma=Gamma, Theta=Theta, Nu=Nu, Sigma=Sigma, 
               Y_impute = Y_impute, bg=bg_av, Groups=group_name, Batches=batch_name))
 }
