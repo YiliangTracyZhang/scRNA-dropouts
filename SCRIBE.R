@@ -3,7 +3,7 @@
 ####################################
 
 MH_bg <- function(Y, Y_zero, Cell_N, Gene_N, N_batch, batch_name, bat_ind, bg, Lambda, Pi, Theta, Nu, Sigma, step, burn, K){
-  bg_sample  <- matrix(0, ncol=K, nrow=Gene_N) # record the samples
+  # bg_sample  <- matrix(0, ncol=K, nrow=Gene_N) # record the samples
   bg_sum <- matrix(0, ncol=N_batch, nrow=Gene_N)
   bgsq_sum <- rep(0, N_batch)
   ita <- matrix(0, ncol=Cell_N, nrow=Gene_N)
@@ -67,7 +67,7 @@ MH_bg <- function(Y, Y_zero, Cell_N, Gene_N, N_batch, batch_name, bat_ind, bg, L
     hidden <- matrix(runif(N_batch*Gene_N), ncol=N_batch)
     accept <- ratio>hidden
     bg[accept] <- bg_propose[accept]
-    bg_sample[,i] <- bg # record the samples
+    # bg_sample[,i] <- bg # record the samples
     for(batches in 1:N_batch){
       Lambda_bg[accept[,batches], bat_ind == batch_name[batches]] <- Lambda_bg_propose[accept[,batches],bat_ind == batch_name[batches]]
       Pi_bg[accept[,batches], bat_ind == batch_name[batches]] <- Pi_bg_propose[accept[,batches], bat_ind == batch_name[batches]]
@@ -87,7 +87,7 @@ MH_bg <- function(Y, Y_zero, Cell_N, Gene_N, N_batch, batch_name, bat_ind, bg, L
     }
   }
   # return(list(bg_sum=bg_sum, bgsq_sum=bgsq_sum, ita=ita, Zexpbc=Zexpbc, Z=Z))
-  return(list(bg_sum=bg_sum, bgsq_sum=bgsq_sum, ita=ita, Zexpbg=Zexpbg, Z=Z, bg_sample=bg_sample))
+  return(list(bg_sum=bg_sum, bgsq_sum=bgsq_sum, ita=ita, Zexpbg=Zexpbg, Z=Z))
 }
 
 #####################
@@ -146,7 +146,8 @@ fitSCRIBE <- function(Y, bat_ind, bio_ind, step=0.1, burn=50, burn_start=500, K=
   bg_av <- MH$bg_sum/K
   bgsq_av <- MH$bgsq_sum/(K*Gene_N)
   ita <- MH$ita/K
-  Zexpbc <- MH$Zexpbc
+  # Zexpbc <- MH$Zexpbc
+  Zexpbg <- MH$Zexpbg
   
   #M step
   Gamma1 <- Gamma
@@ -175,8 +176,10 @@ fitSCRIBE <- function(Y, bat_ind, bio_ind, step=0.1, burn=50, burn_start=500, K=
   }
   
   for(batches in 1:N_batch){
-    Nu[batch] <- mean(bg_av[,batches])
-    Sigma[batch] <- bgsq_av[batches] - Nu[batch]^2
+    # Nu[batch] <- mean(bg_av[,batches])
+    # Sigma[batch] <- bgsq_av[batches] - Nu[batch]^2
+          Nu[batches] <- mean(bg_av[,batches])
+          Sigma[batches] <- bgsq_av[batches] - Nu[batches]^2
   }
   Lambda <- sweep(sweep(Mu, 1, gene_len, FUN='*')%*%Group_Matrix, 2, tot_read, FUN = '*')
   for(batches in 1:N_batch){
@@ -190,7 +193,8 @@ fitSCRIBE <- function(Y, bat_ind, bio_ind, step=0.1, burn=50, burn_start=500, K=
     bg_av <- MH$bg_sum/K
     bgsq_av <- MH$bgsq_sum/(K*Gene_N)
     ita <- MH$ita/K
-    Zexpbc <- MH$Zexpbc
+    # Zexpbc <- MH$Zexpbc
+    Zexpbg <- MH$Zexpbg
     
     #M step
     Gamma1 <- Gamma
