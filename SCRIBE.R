@@ -152,7 +152,6 @@ fitSCRIBE <- function(Y, bat_ind, bio_ind, step=0.1, burn=50, burn_start=500, K=
   Nu1 <- Nu
   Sigma1 <- Sigma
   Mu1 <- Mu
-  
   for(groups in 1:N_group){
     Mu[,groups] <- K*rowSums(Y[,bio_ind==group_name[groups]])/(gene_len*rowSums(sweep(Zexpbg[,bio_ind==group_name[groups]], 2, tot_read[bio_ind==group_name[groups]], FUN="*")))
   }
@@ -171,8 +170,8 @@ fitSCRIBE <- function(Y, bat_ind, bio_ind, step=0.1, burn=50, burn_start=500, K=
   }
   
   for(batches in 1:N_batch){
-    Nu[batch] <- mean(bg_av[,batches])
-    Sigma[batch] <- bgsq_av[batches] - Nu[batch]^2
+    Nu[batches] <- mean(bg_av[,batches])
+    Sigma[batches] <- bgsq_av[batches] - Nu[batches]^2
   }
   Lambda <- sweep(sweep(Mu, 1, gene_len, FUN='*')%*%Group_Matrix, 2, tot_read, FUN = '*')
   for(batches in 1:N_batch){
@@ -221,7 +220,7 @@ fitSCRIBE <- function(Y, bat_ind, bio_ind, step=0.1, burn=50, burn_start=500, K=
     for(batches in 1:N_batch){
       Pi[, bat_ind == batch_name[batches]] <- Gamma[batches] + sweep(sweep(Pi[, bat_ind == batch_name[batches]], 2, Alpha[batches]*log(tot_read[bat_ind==batch_name[batches]]), FUN="+"), 1, Beta[batches]*log(gene_len), FUN="+")
     }
-    cat("iteration", j)
+    cat("iteration", j, '/n')
     j <- j + 1
   }
   Z <- MH$Z/K
