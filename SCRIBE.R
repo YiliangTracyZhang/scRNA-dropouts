@@ -220,7 +220,7 @@ fitSCRIBE <- function(Y, bat_ind, bio_ind, step=0.1, burn=50, burn_start=500, K=
     for(batches in 1:N_batch){
       Pi[, bat_ind == batch_name[batches]] <- Gamma[batches] + sweep(sweep(Pi[, bat_ind == batch_name[batches]], 2, Alpha[batches]*log(tot_read[bat_ind==batch_name[batches]]), FUN="+"), 1, Beta[batches]*log(gene_len), FUN="+")
     }
-    cat("iteration", j, '/n')
+    cat("iteration", j, '\n')
     j <- j + 1
   }
   Z <- MH$Z/K
