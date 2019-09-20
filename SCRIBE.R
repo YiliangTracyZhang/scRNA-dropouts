@@ -142,7 +142,7 @@ fitSCRIBE <- function(Y, bat_ind, bio_ind, step=0.1, burn=50, burn_start=500, K=
   bg_av <- MH$bg_sum/K
   bgsq_av <- MH$bgsq_sum/(K*Gene_N)
   ita <- MH$ita/K
-  Zexpbc <- MH$Zexpbc
+  Zexpbg <- MH$Zexpbg
   
   #M step
   Gamma1 <- Gamma
@@ -185,7 +185,7 @@ fitSCRIBE <- function(Y, bat_ind, bio_ind, step=0.1, burn=50, burn_start=500, K=
     bg_av <- MH$bg_sum/K
     bgsq_av <- MH$bgsq_sum/(K*Gene_N)
     ita <- MH$ita/K
-    Zexpbc <- MH$Zexpbc
+    Zexpbg <- MH$Zexpbg
     
     #M step
     Gamma1 <- Gamma
