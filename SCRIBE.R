@@ -84,7 +84,7 @@ MH_bg <- function(Y, Y_zero, Cell_N, Gene_N, N_batch, batch_name, bat_ind, bg, L
       bgsq_sum[batches] <- bgsq_sum[batches] + sum(bg[,batches]^2)
     }
   }
-  return(list(bg_sum=bg_sum, bgsq_sum=bgsq_sum, ita=ita, Zexpbc=Zexpbc, Z=Z))
+  return(list(bg_sum=bg_sum, bgsq_sum=bgsq_sum, ita=ita, Zexpbg=Zexpbg, Z=Z))
 }
 
 #####################
@@ -94,6 +94,7 @@ MH_bg <- function(Y, Y_zero, Cell_N, Gene_N, N_batch, batch_name, bat_ind, bg, L
 fitSCRIBE <- function(Y, bat_ind, bio_ind, step=0.1, burn=50, burn_start=500, K=500, max_iter=100, stop=0.001){
   # gene_len <- gene_len/mean(gene_len)
   # tot_read <- tot_read/mean(tot_read)
+  Y <- as.matrix(Y)
   Y_zero <- Y <= 0
   Cell_N <- ncol(Y)
   Gene_N <- nrow(Y)
