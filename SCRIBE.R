@@ -39,7 +39,7 @@ MH_bg <- function(Y, Y_zero, Cell_N, Gene_N, N_batch, batch_name, bat_ind, bg, L
     accept <- ratio>hidden
     bg[accept] <- bg_propose[accept]
     log_dense[accept] <- log_dense_propose[accept]
-    mh_trace <- c(mh_trace, bg[249,1])
+    mh_trace <- c(mh_trace, bg[249,2])
   }
   for(batches in 1:N_batch){
     Lambda_bg[, bat_ind == batch_name[batches]] <- sweep(Lambda[, bat_ind == batch_name[batches]], 1, exp(bg[,batches]), FUN='*')
