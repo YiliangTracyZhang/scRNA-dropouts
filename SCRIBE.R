@@ -22,6 +22,7 @@ MH_bg <- function(Y, Y_zero, Cell_N, Gene_N, N_batch, batch_name, bat_ind, bg, L
   for(batches in 1:N_batch){
     log_dense[, batches] <- -(bg[,batches]-Nu[batches])^2/(2*Sigma[batches]^2)+rowSums(log_int_z[,bat_ind == batch_name[batches]])
   }
+  mh_trace<-c()
   for(i in 1:burn){
     bg_propose <- bg + matrix(rnorm(N_batch*Gene_N, mean=0, sd=step), ncol=N_batch)
     for(batches in 1:N_batch){
@@ -38,6 +39,7 @@ MH_bg <- function(Y, Y_zero, Cell_N, Gene_N, N_batch, batch_name, bat_ind, bg, L
     accept <- ratio>hidden
     bg[accept] <- bg_propose[accept]
     log_dense[accept] <- log_dense_propose[accept]
+    mh_trace <- c(mh_trace, bg[249,1])
   }
   for(batches in 1:N_batch){
     Lambda_bg[, bat_ind == batch_name[batches]] <- sweep(Lambda[, bat_ind == batch_name[batches]], 1, exp(bg[,batches]), FUN='*')
@@ -57,6 +59,7 @@ MH_bg <- function(Y, Y_zero, Cell_N, Gene_N, N_batch, batch_name, bat_ind, bg, L
     hidden <- matrix(runif(N_batch*Gene_N), ncol=N_batch)
     accept <- ratio>hidden
     bg[accept] <- bg_propose[accept]
+    mh_trace <- c(mh_trace, bg[249,2])
     for(batches in 1:N_batch){
       Lambda_bg[accept[,batches], bat_ind == batch_name[batches]] <- Lambda_bg_propose[accept[,batches],bat_ind == batch_name[batches]]
     }
@@ -73,7 +76,7 @@ MH_bg <- function(Y, Y_zero, Cell_N, Gene_N, N_batch, batch_name, bat_ind, bg, L
       Zexpbg[,bat_ind == batch_name[batches]] <- Zexpbg[,bat_ind == batch_name[batches]] + sweep(z_temp[, bat_ind == batch_name[batches]], 1, expbg[,batches], FUN='*')
     }
   }
-  return(list(bg_sum=bg_sum, bgsq_sum=bgsq_sum, ita=ita, Zexpbg=Zexpbg, Z=Z))
+  return(list(bg_sum=bg_sum, bgsq_sum=bgsq_sum, ita=ita, Zexpbg=Zexpbg, Z=Z, mh_trace=mh_trace))
 }
 
 #####################
@@ -161,7 +164,7 @@ fitSCRIBE <- function(Y, bat_ind, bio_ind, burn=50, burn_start=500, K=500, max_i
   stepsq = ifelse(as.vector(bgsq_av-bg_av^2)>stepthreshold^2, as.vector(bgsq_av-bg_av^2), stepthreshold^2)
   step <- sqrt(stepsq)
   j <- 1
-  while(j<=max_iter & max(abs((Alpha1-Alpha)/Alpha), abs((Beta1-Beta)/Beta), abs((Theta1-Theta)/Theta), abs((Nu1-Nu)/Nu))>0.001){
+  while(j<=max_iter & max(abs((Alpha1-Alpha)/Alpha), abs((Beta1-Beta)/Beta), abs((Gamma1-Gamma)/Gamma), abs((Nu1-Nu)/Nu))>0.001){
     # E step
     MH <- MH_bg(Y, Y_zero, Cell_N, Gene_N, N_batch, batch_name, bat_ind, bg_av, Lambda, Pi, Nu, Sigma, step, burn, K)
     bg_av <- MH$bg_sum/K
@@ -219,7 +222,7 @@ fitSCRIBE <- function(Y, bat_ind, bio_ind, burn=50, burn_start=500, K=500, max_i
   for(batches in 1:N_batch){
     Lambda_bg[, bat_ind == batch_name[batches]] <- sweep(Lambda[, bat_ind == batch_name[batches]], 1, exp(bg_av[,batches]), FUN='*')
   }
-  
+  plot(MH$mh_trace, type='l')
   # dropout imputation
   cat("start imputing ... ...")
   Y_impute <- matrix(0, ncol=Cell_N, nrow=Gene_N)
