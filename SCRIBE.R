@@ -2,24 +2,21 @@
 ### Metropolis hasting algorithm ###
 ####################################
 
-MH_bg <- function(Y, Y_zero, Cell_N, Gene_N, N_batch, batch_name, bat_ind, bg, Lambda, Pi, Theta, Nu, Sigma, step, burn, K){
+MH_bg <- function(Y, Y_zero, Cell_N, Gene_N, N_batch, batch_name, bat_ind, bg, Lambda, Pi, Nu, Sigma, step, burn, K){
   bg_sum <- matrix(0, ncol=N_batch, nrow=Gene_N)
-  bgsq_sum <- rep(0, N_batch)
+  bgsq_sum <- matrix(0, ncol=N_batch, nrow=Gene_N)
   ita <- matrix(0, ncol=Cell_N, nrow=Gene_N)
   Z <- matrix(0, ncol=Cell_N, nrow=Gene_N)
   Zexpbg <- matrix(0, ncol=Cell_N, nrow=Gene_N)
   Lambda_bg <- matrix(0, ncol=Cell_N, nrow=Gene_N)
   Lambda_bg_propose <- matrix(0, ncol=Cell_N, nrow=Gene_N)
-  Pi_bg <- matrix(0, ncol=Cell_N, nrow=Gene_N)
-  Pi_bg_propose <- matrix(0, ncol=Cell_N, nrow=Gene_N)
+  Phi <- pnorm(Pi)
   for(batches in 1:N_batch){
     Lambda_bg[, bat_ind == batch_name[batches]] <- sweep(Lambda[, bat_ind == batch_name[batches]], 1, exp(bg[,batches]), FUN='*')
-    Pi_bg[, bat_ind == batch_name[batches]] <- sweep(Pi[, bat_ind == batch_name[batches]], 1, bg[,batches]*Theta[batches], FUN='+')
   }
-  Phi <- pnorm(Pi_bg)
   log_int_z <- matrix(0, ncol=Cell_N, nrow=Gene_N)
   log_int_z[Y_zero] <- log(1+Phi[Y_zero]*(exp(-Lambda_bg[Y_zero])-1))
-  log_int_z[!Y_zero] <- log(Phi[!Y_zero])+Y[!Y_zero]*log(Lambda_bg[!Y_zero])-Lambda_bg[!Y_zero]
+  log_int_z[!Y_zero] <- Y[!Y_zero]*log(Lambda_bg[!Y_zero])-Lambda_bg[!Y_zero]
   log_dense <- matrix(0, ncol=N_batch, nrow=Gene_N)
   log_dense_propose <- matrix(0, ncol=N_batch, nrow=Gene_N)
   for(batches in 1:N_batch){
@@ -29,11 +26,9 @@ MH_bg <- function(Y, Y_zero, Cell_N, Gene_N, N_batch, batch_name, bat_ind, bg, L
     bg_propose <- bg + matrix(rnorm(N_batch*Gene_N, mean=0, sd=step), ncol=N_batch)
     for(batches in 1:N_batch){
       Lambda_bg[, bat_ind == batch_name[batches]] <- sweep(Lambda[, bat_ind == batch_name[batches]], 1, exp(bg_propose[,batches]), FUN='*')
-      Pi_bg[, bat_ind == batch_name[batches]] <- sweep(Pi[, bat_ind == batch_name[batches]], 1, bg_propose[,batches]*Theta[batches], FUN='+')
     }
-    Phi <- pnorm(Pi_bg)
     log_int_z[Y_zero] <- log(1+Phi[Y_zero]*(exp(-Lambda_bg[Y_zero])-1))
-    log_int_z[!Y_zero] <- log(Phi[!Y_zero])+Y[!Y_zero]*log(Lambda_bg[!Y_zero])-Lambda_bg[!Y_zero]
+    log_int_z[!Y_zero] <- Y[!Y_zero]*log(Lambda_bg[!Y_zero])-Lambda_bg[!Y_zero]
     for(batches in 1:N_batch){
       log_dense_propose[, batches] <- -(bg_propose[,batches]-Nu[batches])^2/(2*Sigma[batches]^2)+rowSums(log_int_z[,bat_ind == batch_name[batches]])
     }
@@ -46,18 +41,14 @@ MH_bg <- function(Y, Y_zero, Cell_N, Gene_N, N_batch, batch_name, bat_ind, bg, L
   }
   for(batches in 1:N_batch){
     Lambda_bg[, bat_ind == batch_name[batches]] <- sweep(Lambda[, bat_ind == batch_name[batches]], 1, exp(bg[,batches]), FUN='*')
-    Pi_bg[, bat_ind == batch_name[batches]] <- sweep(Pi[, bat_ind == batch_name[batches]], 1, bg[,batches]*Theta[batches], FUN='+')
   }
-  Phi <- pnorm(Pi_bg)
   for(i in 1:K){
     bg_propose <- bg + matrix(rnorm(N_batch*Gene_N, mean=0, sd=step), ncol=N_batch)
     for(batches in 1:N_batch){
       Lambda_bg_propose[, bat_ind == batch_name[batches]] <- sweep(Lambda[, bat_ind == batch_name[batches]], 1, exp(bg_propose[,batches]), FUN='*')
-      Pi_bg_propose[, bat_ind == batch_name[batches]] <- sweep(Pi[, bat_ind == batch_name[batches]], 1, bg_propose[,batches]*Theta[batches], FUN='+')
     }
-    Phi_propose <- pnorm(Pi_bg_propose)
-    log_int_z[Y_zero] <- log(1+Phi_propose[Y_zero]*(exp(-Lambda_bg_propose[Y_zero])-1))
-    log_int_z[!Y_zero] <- log(Phi_propose[!Y_zero])+Y[!Y_zero]*log(Lambda_bg_propose[!Y_zero])-Lambda_bg_propose[!Y_zero]
+    log_int_z[Y_zero] <- log(1+Phi[Y_zero]*(exp(-Lambda_bg_propose[Y_zero])-1))
+    log_int_z[!Y_zero] <- Y[!Y_zero]*log(Lambda_bg_propose[!Y_zero])-Lambda_bg_propose[!Y_zero]
     for(batches in 1:N_batch){
       log_dense_propose[, batches] <- -(bg_propose[,batches]-Nu[batches])^2/(2*Sigma[batches]^2)+rowSums(log_int_z[,bat_ind == batch_name[batches]])
     }
@@ -68,20 +59,18 @@ MH_bg <- function(Y, Y_zero, Cell_N, Gene_N, N_batch, batch_name, bat_ind, bg, L
     bg[accept] <- bg_propose[accept]
     for(batches in 1:N_batch){
       Lambda_bg[accept[,batches], bat_ind == batch_name[batches]] <- Lambda_bg_propose[accept[,batches],bat_ind == batch_name[batches]]
-      Pi_bg[accept[,batches], bat_ind == batch_name[batches]] <- Pi_bg_propose[accept[,batches], bat_ind == batch_name[batches]]
-      Phi[accept[,batches], bat_ind == batch_name[batches]] <- Phi_propose[accept[,batches], bat_ind == batch_name[batches]]
     }
     log_dense[accept] <- log_dense_propose[accept]
     bg_sum <- bg_sum + bg
+    bgsq_sum <- bgsq_sum + bg^2
     expbg <- exp(bg)
     explambda <- exp(-Lambda_bg)
     z_temp <- Phi*explambda/(1+Phi*(explambda-1))
     z_temp[!Y_zero] <- 1
     Z <- Z + z_temp
-    ita <- ita + Pi_bg + z_temp*exp(-Pi_bg^2/2)/(sqrt(2*pi)*Phi) - (1-z_temp)*exp(-Pi_bg^2/2)/(sqrt(2*pi)*(1-Phi))  
+    ita <- ita + Pi + z_temp*exp(-Pi^2/2)/(sqrt(2*pi)*Phi) - (1-z_temp)*exp(-Pi^2/2)/(sqrt(2*pi)*(1-Phi)) 
     for(batches in 1:N_batch){
       Zexpbg[,bat_ind == batch_name[batches]] <- Zexpbg[,bat_ind == batch_name[batches]] + sweep(z_temp[, bat_ind == batch_name[batches]], 1, expbg[,batches], FUN='*')
-      bgsq_sum[batches] <- bgsq_sum[batches] + sum(bg[,batches]^2)
     }
   }
   return(list(bg_sum=bg_sum, bgsq_sum=bgsq_sum, ita=ita, Zexpbg=Zexpbg, Z=Z))
@@ -91,7 +80,7 @@ MH_bg <- function(Y, Y_zero, Cell_N, Gene_N, N_batch, batch_name, bat_ind, bg, L
 ### main function ###
 #####################
 
-fitSCRIBE <- function(Y, bat_ind, bio_ind, step=0.1, burn=50, burn_start=500, K=500, max_iter=100, stop=0.001){
+fitSCRIBE <- function(Y, bat_ind, bio_ind, burn=50, burn_start=500, K=500, max_iter=100){
   # gene_len <- gene_len/mean(gene_len)
   # tot_read <- tot_read/mean(tot_read)
   Y <- as.matrix(Y)
@@ -115,7 +104,6 @@ fitSCRIBE <- function(Y, bat_ind, bio_ind, step=0.1, burn=50, burn_start=500, K=
   Gamma <- rep(0, N_batch)
   Alpha <- rep(0, N_batch)
   Beta <- rep(0, N_batch)
-  Theta <- rep(0, N_batch)
   Nu <- rep(0, N_batch)
   Sigma <- rep(0.5, N_batch)
   Mu <- matrix(0,nrow=Gene_N,ncol=N_group)
@@ -138,9 +126,10 @@ fitSCRIBE <- function(Y, bat_ind, bio_ind, step=0.1, burn=50, burn_start=500, K=
   }
   
   # E step
-  MH <- MH_bg(Y, Y_zero, Cell_N, Gene_N, N_batch, batch_name, bat_ind, bg, Lambda, Pi, Theta, Nu, Sigma, step, burn_start, K)
+  step = 0.1
+  MH <- MH_bg(Y, Y_zero, Cell_N, Gene_N, N_batch, batch_name, bat_ind, bg, Lambda, Pi, Nu, Sigma, step, burn_start, K)
   bg_av <- MH$bg_sum/K
-  bgsq_av <- MH$bgsq_sum/(K*Gene_N)
+  bgsq_av <- MH$bgsq_sum/K
   ita <- MH$ita/K
   Zexpbg <- MH$Zexpbg
   
@@ -148,7 +137,6 @@ fitSCRIBE <- function(Y, bat_ind, bio_ind, step=0.1, burn=50, burn_start=500, K=
   Gamma1 <- Gamma
   Alpha1 <- Alpha
   Beta1 <- Beta
-  Theta1 <- Theta
   Nu1 <- Nu
   Sigma1 <- Sigma
   Mu1 <- Mu
@@ -159,30 +147,25 @@ fitSCRIBE <- function(Y, bat_ind, bio_ind, step=0.1, burn=50, burn_start=500, K=
   for(batches in 1:N_batch){
     batch_ita <- ita[,bat_ind == batch_name[batches]]
     response <- as.vector(batch_ita)
-    bgvector <- rep(bg[,batches], sum(bat_ind == batch_name[batches]))
     logrc <- rep(log(tot_read[bat_ind == batch_name[batches]]), each=Gene_N)
     loglg <- rep(log(gene_len), sum(bat_ind == batch_name[batches]))
-    LM_Results <- lm(response~logrc+loglg+bgvector)
+    LM_Results <- lm(response~logrc+loglg)
     Gamma[batches] <- LM_Results$coefficients[[1]]
     Alpha[batches] <- LM_Results$coefficients[[2]]
     Beta[batches] <- LM_Results$coefficients[[3]]
-    Theta[batches] <- LM_Results$coefficients[[4]]
   }
-  
-  for(batches in 1:N_batch){
-    Nu[batches] <- mean(bg_av[,batches])
-    Sigma[batches] <- bgsq_av[batches] - Nu[batches]^2
-  }
+  Nu <- colMeans(bg_av)
+  Sigma <- sqrt(colMeans(bgsq_av)-Nu^2)
   Lambda <- sweep(sweep(Mu, 1, gene_len, FUN='*')%*%Group_Matrix, 2, tot_read, FUN = '*')
-  for(batches in 1:N_batch){
-    Pi[, bat_ind == batch_name[batches]] <- Gamma[batches] + sweep(sweep(Pi[, bat_ind == batch_name[batches]], 2, Alpha[batches]*log(tot_read[bat_ind==batch_name[batches]]), FUN="+"), 1, Beta[batches]*log(gene_len), FUN="+")
-  }
+  stepthreshold <- step/2
+  stepsq = ifelse(as.vector(bgsq_av-bg_av^2)>stepthreshold^2, as.vector(bgsq_av-bg_av^2), stepthreshold^2)
+  step <- sqrt(stepsq)
   j <- 1
-  while(j<=max_iter & max(abs(Alpha1-Alpha), abs(Beta1-Beta), abs(Theta1-Theta), abs(Nu1-Nu), abs(Sigma1-Sigma),abs(Mu-Mu1))>stop){
+  while(j<=max_iter & max(abs((Alpha1-Alpha)/Alpha), abs((Beta1-Beta)/Beta), abs((Theta1-Theta)/Theta), abs((Nu1-Nu)/Nu))>0.01){
     # E step
-    MH <- MH_bg(Y, Y_zero, Cell_N, Gene_N, N_batch, batch_name, bat_ind, bg_av, Lambda, Pi, Theta, Nu, Sigma, step, burn, K)
+    MH <- MH_bg(Y, Y_zero, Cell_N, Gene_N, N_batch, batch_name, bat_ind, bg_av, Lambda, Pi, Nu, Sigma, step, burn, K)
     bg_av <- MH$bg_sum/K
-    bgsq_av <- MH$bgsq_sum/(K*Gene_N)
+    bgsq_av <- MH$bgsq_sum/K
     ita <- MH$ita/K
     Zexpbg <- MH$Zexpbg
     
@@ -202,39 +185,39 @@ fitSCRIBE <- function(Y, bat_ind, bio_ind, step=0.1, burn=50, burn_start=500, K=
     for(batches in 1:N_batch){
       batch_ita <- ita[,bat_ind == batch_name[batches]]
       response <- as.vector(batch_ita)
-      bgvector <- rep(bg[,batches], sum(bat_ind == batch_name[batches]))
       logrc <- rep(log(tot_read[bat_ind == batch_name[batches]]), each=Gene_N)
       loglg <- rep(log(gene_len), sum(bat_ind == batch_name[batches]))
-      LM_Results <- lm(response~logrc+loglg+bgvector)
+      LM_Results <- lm(response~logrc+loglg)
       Gamma[batches] <- LM_Results$coefficients[[1]]
       Alpha[batches] <- LM_Results$coefficients[[2]]
       Beta[batches] <- LM_Results$coefficients[[3]]
-      Theta[batches] <- LM_Results$coefficients[[4]]
     }
     
-    for(batches in 1:N_batch){
-      Nu[batches] <- mean(bg_av[,batches])
-      Sigma[batches] <- bgsq_av[batches] - Nu[batches]^2
-    }
+    Nu <- colMeans(bg_av)
+    Sigma <- sqrt(colMeans(bgsq_av)-Nu^2)
     Lambda <- sweep(sweep(Mu, 1, gene_len, FUN='*')%*%Group_Matrix, 2, tot_read, FUN = '*')
-    for(batches in 1:N_batch){
-      Pi[, bat_ind == batch_name[batches]] <- Gamma[batches] + sweep(sweep(Pi[, bat_ind == batch_name[batches]], 2, Alpha[batches]*log(tot_read[bat_ind==batch_name[batches]]), FUN="+"), 1, Beta[batches]*log(gene_len), FUN="+")
-    }
+    stepthreshold <- stepthreshold/2
+    stepsq = ifelse(as.vector(bgsq_av-bg_av^2)>stepthreshold^2, as.vector(bgsq_av-bg_av^2), stepthreshold^2)
+    step <- sqrt(stepsq)
     cat("iteration", j, '\n')
+    print(Alpha)
+    print(Beta)
+    print(Gamma)
+    print(Nu)
+    print(Sigma)
     j <- j + 1
   }
-  Z <- MH$Z/K
-  Lambda_bg <- matrix(0, ncol=Cell_N, nrow=Gene_N)
-  for(batches in 1:N_batch){
-    Lambda_bg[, bat_ind == batch_name[batches]] <- sweep(Lambda[, bat_ind == batch_name[batches]], 1, exp(bg_av[,batches]), FUN='*')
-  }
-  
   meanNu <- mean(Nu)
   bg_av = bg_av - meanNu
   Nu = Nu - meanNu
   Mu = Mu * exp(meanNu)
   for(batches in 1:N_batch){
     Gamma[batches] = Gamma[batches] + Theta[batches]*meanNu
+  }
+  Z <- MH$Z/K
+  Lambda_bg <- matrix(0, ncol=Cell_N, nrow=Gene_N)
+  for(batches in 1:N_batch){
+    Lambda_bg[, bat_ind == batch_name[batches]] <- sweep(Lambda[, bat_ind == batch_name[batches]], 1, exp(bg_av[,batches]), FUN='*')
   }
   
   # dropout imputation
@@ -245,8 +228,8 @@ fitSCRIBE <- function(Y, bat_ind, bio_ind, step=0.1, burn=50, burn_start=500, K=
       Y_cg <- Y[genes, cells]
       lambda_bcg <- Lambda_bg[genes, cells]
       lambda_cg <- Lambda[genes, cells]
-      lowerp <- ppois(q=Y_cg - 1, lambda=lambda_bcg)
-      upperp <- ppois(q=Y_cg, lambda=lambda_bcg)
+      lowerp <- max(ppois(q=Y_cg - 1, lambda=lambda_bcg)-0.00002, 0)
+      upperp <- max(ppois(q=Y_cg, lambda=lambda_bcg)-0.00001, 0)
       lowerq <- qpois(p=lowerp, lambda=lambda_cg)
       upperq <- qpois(p=upperp, lambda=lambda_cg)
       sumweight <- upperp - lowerp
@@ -259,7 +242,7 @@ fitSCRIBE <- function(Y, bat_ind, bio_ind, step=0.1, burn=50, burn_start=500, K=
       Y_impute[genes, cells] = tempsum/sumweight
     }
   }
-  Y_impute <- Y_impute * Z + Lambda * (1 - Z)
-  return(list(Mu=Mu, Alpha=Alpha, Beta=Beta, Gamma=Gamma, Theta=Theta, Nu=Nu, Sigma=Sigma, 
+  Y_impute <- Y_impute * Z + rpois(1,Lambda) * (1 - Z)
+  return(list(Mu=Mu, Alpha=Alpha, Beta=Beta, Gamma=Gamma, Nu=Nu, Sigma=Sigma, 
               Y_impute = Y_impute, bg=bg_av, Groups=group_name, Batches=batch_name))
 }
