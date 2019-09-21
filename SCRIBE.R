@@ -208,6 +208,9 @@ fitSCRIBE <- function(Y, bat_ind, bio_ind, burn=50, burn_start=500, K=500, max_i
     cat("Nu=", Nu, '\n')
     cat("Sigma=", Sigma, '\n')
     j <- j + 1
+    if(j %% 10==0){
+      plot(MH$mh_trace, type='l')
+    }
   }
   meanNu <- mean(Nu)
   bg_av = bg_av - meanNu
