@@ -176,7 +176,6 @@ fitSCRIBE <- function(Y, bat_ind, bio_ind, burn=50, burn_start=500, K=500, max_i
     Gamma1 <- Gamma
     Alpha1 <- Alpha
     Beta1 <- Beta
-    Theta1 <- Theta
     Nu1 <- Nu
     Sigma1 <- Sigma
     Mu1 <- Mu
@@ -214,9 +213,6 @@ fitSCRIBE <- function(Y, bat_ind, bio_ind, burn=50, burn_start=500, K=500, max_i
   bg_av = bg_av - meanNu
   Nu = Nu - meanNu
   Mu = Mu * exp(meanNu)
-  for(batches in 1:N_batch){
-    Gamma[batches] = Gamma[batches] + Theta[batches]*meanNu
-  }
   Z <- MH$Z/K
   Lambda_bg <- matrix(0, ncol=Cell_N, nrow=Gene_N)
   for(batches in 1:N_batch){
