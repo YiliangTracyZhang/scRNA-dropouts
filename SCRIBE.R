@@ -161,7 +161,7 @@ fitSCRIBE <- function(Y, bat_ind, bio_ind, burn=50, burn_start=500, K=500, max_i
   stepsq = ifelse(as.vector(bgsq_av-bg_av^2)>stepthreshold^2, as.vector(bgsq_av-bg_av^2), stepthreshold^2)
   step <- sqrt(stepsq)
   j <- 1
-  while(j<=max_iter & max(abs((Alpha1-Alpha)/Alpha), abs((Beta1-Beta)/Beta), abs((Theta1-Theta)/Theta), abs((Nu1-Nu)/Nu))>0.01){
+  while(j<=max_iter & max(abs((Alpha1-Alpha)/Alpha), abs((Beta1-Beta)/Beta), abs((Theta1-Theta)/Theta), abs((Nu1-Nu)/Nu))>0.001){
     # E step
     MH <- MH_bg(Y, Y_zero, Cell_N, Gene_N, N_batch, batch_name, bat_ind, bg_av, Lambda, Pi, Nu, Sigma, step, burn, K)
     bg_av <- MH$bg_sum/K
@@ -200,11 +200,11 @@ fitSCRIBE <- function(Y, bat_ind, bio_ind, burn=50, burn_start=500, K=500, max_i
     stepsq = ifelse(as.vector(bgsq_av-bg_av^2)>stepthreshold^2, as.vector(bgsq_av-bg_av^2), stepthreshold^2)
     step <- sqrt(stepsq)
     cat("iteration", j, '\n')
-    print(Alpha)
-    print(Beta)
-    print(Gamma)
-    print(Nu)
-    print(Sigma)
+    cat("Alpha=", Alpha, '\n')
+    cat("Beta=", Beta, '\n')
+    cat("Gamma=", Gamma, '\n')
+    cat("Nu=", Nu, '\n')
+    cat("Sigma=", Sigma, '\n')
     j <- j + 1
   }
   meanNu <- mean(Nu)
@@ -228,8 +228,8 @@ fitSCRIBE <- function(Y, bat_ind, bio_ind, burn=50, burn_start=500, K=500, max_i
       Y_cg <- Y[genes, cells]
       lambda_bcg <- Lambda_bg[genes, cells]
       lambda_cg <- Lambda[genes, cells]
-      lowerp <- max(ppois(q=Y_cg - 1, lambda=lambda_bcg)-0.00002, 0)
-      upperp <- max(ppois(q=Y_cg, lambda=lambda_bcg)-0.00001, 0)
+      lowerp <- max(ppois(q=Y_cg - 1, lambda=lambda_bcg), 0)
+      upperp <- max(ppois(q=Y_cg, lambda=lambda_bcg), 0)
       lowerq <- qpois(p=lowerp, lambda=lambda_cg)
       upperq <- qpois(p=upperp, lambda=lambda_cg)
       sumweight <- upperp - lowerp
