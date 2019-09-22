@@ -39,7 +39,7 @@ MH_bg <- function(Y, Y_zero, Cell_N, Gene_N, N_batch, batch_name, bat_ind, bg, L
     accept <- ratio>hidden
     bg[accept] <- bg_propose[accept]
     log_dense[accept] <- log_dense_propose[accept]
-    mh_trace <- c(mh_trace, bg[249,2])
+    mh_trace <- c(mh_trace, bg[120,1])
   }
   for(batches in 1:N_batch){
     Lambda_bg[, bat_ind == batch_name[batches]] <- sweep(Lambda[, bat_ind == batch_name[batches]], 1, exp(bg[,batches]), FUN='*')
@@ -59,7 +59,7 @@ MH_bg <- function(Y, Y_zero, Cell_N, Gene_N, N_batch, batch_name, bat_ind, bg, L
     hidden <- matrix(runif(N_batch*Gene_N), ncol=N_batch)
     accept <- ratio>hidden
     bg[accept] <- bg_propose[accept]
-    mh_trace <- c(mh_trace, bg[249,2])
+    mh_trace <- c(mh_trace, bg[120,1])
     for(batches in 1:N_batch){
       Lambda_bg[accept[,batches], bat_ind == batch_name[batches]] <- Lambda_bg_propose[accept[,batches],bat_ind == batch_name[batches]]
     }
@@ -241,10 +241,10 @@ fitSCRIBE <- function(Y, bat_ind, bio_ind, burn=50, burn_start=500, K=500, max_i
         up1p <- min(ppois(q=imp, lambda=lambda_cg), upperp)
         tempsum <- tempsum + imp*(up1p - low1p)
       }
-      Y_impute[genes, cells] = tempsum/sumweight
+      Z_cg <- Z[genes, cells]
+      Y_impute[genes, cells] = tempsum/sumweight * Z_cg + rpois(1,lambda_cg)*(1-Z_cg)
     }
   }
-  Y_impute <- Y_impute * Z + rpois(1,Lambda) * (1 - Z)
   return(list(Mu=Mu, Alpha=Alpha, Beta=Beta, Gamma=Gamma, Nu=Nu, Sigma=Sigma, 
               Y_impute = Y_impute, bg=bg_av, Groups=group_name, Batches=batch_name))
 }
