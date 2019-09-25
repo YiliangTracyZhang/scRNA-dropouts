@@ -225,8 +225,28 @@ fitSCRIBE <- function(Y, bat_ind, bio_ind, burn=50, burn_start=500, K=500, max_i
   cat("start imputing ... ...")
   Y_impute <- matrix(0, ncol=Cell_N, nrow=Gene_N)
   Y_impute[Lambda_bg==0] <- 0
-  Y_impute[Lambda_bg!=0] <- Y[Lambda_bg!=0] * sqrt(Lambda[Lambda_bg!=0]/Lambda_bg[Lambda_bg!=0]) - sqrt(Lambda[Lambda_bg!=0]*Lambda_bg[Lambda_bg!=0]) + Lambda[Lambda_bg!=0]
-  Y_impute[Y_impute<0] <- 0
+  for(imp in 1:sum(Lambda_bg!=0)){
+    lambda_cg <- Lambda[Lambda_bg!=0][imp]
+    lambda_bcg <- Lambda_bg[Lambda_bg!=0][imp]
+    upperp <- ppois(Y[Lambda_bg!=0][imp], lambda=lambda_bcg)
+    lowerp <- ppois(Y[Lambda_bg!=0][imp]-1, lambda=lambda_bcg)
+    upperq <- qpois(upperp, lambda=lambda_cg)
+    if(upperq!=Inf){
+      lowerq <- qpois(lowerp, lambda=lambda_cg)
+      p1 <- lowerp
+      sumweight <- upperp - lowerp
+      sumq <- 0 
+      for(tempq in lowerq:upperq){
+        p0 <- p1
+        p1 <- min(ppois(tempq, lambda=lambda_cg), upperp)
+        sumq <- sumq + (p1-p0)*tempq
+      }
+      Y_impute[Lambda_bg!=0][imp] <- sumq/sumweight
+    }
+    else{
+      Y_impute[Lambda_bg!=0][imp] <- NA
+    }
+  }
   Y_impute[Y_zero] <- Z[Y_zero] * Y_impute[Y_zero] + (1 - Z[Y_zero]) * rpois(sum(Y_zero), Lambda[Y_zero])
   return(list(Mu=Mu, Alpha=Alpha, Beta=Beta, Gamma=Gamma, Nu=Nu, Sigma=Sigma, 
               Y_impute = Y_impute, bg=bg_av, Groups=group_name, Batches=batch_name))
