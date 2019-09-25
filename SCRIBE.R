@@ -154,6 +154,10 @@ fitSCRIBE <- function(Y, bat_ind, bio_ind, burn=50, burn_start=500, K=500, max_i
   Nu <- colMeans(bg_av)
   Sigma <- sqrt(colMeans(bgsq_av)-Nu^2)
   Lambda <- sweep(sweep(Mu, 1, gene_len, FUN='*')%*%Group_Matrix, 2, tot_read, FUN = '*')
+  Pi <- matrix(0, ncol=Cell_N, nrow=Gene_N)
+  for(batches in 1:N_batch){
+    Pi[, bat_ind == batch_name[batches]] <- Gamma[batches] + sweep(sweep(Pi[, bat_ind == batch_name[batches]], 2, Alpha[batches]*log(tot_read[bat_ind==batch_name[batches]]), FUN="+"), 1, Beta[batches]*log(gene_len), FUN="+")
+  }
   stepthreshold <- step/2
   stepsq = ifelse(as.vector(bgsq_av-bg_av^2)>stepthreshold^2, as.vector(bgsq_av-bg_av^2), stepthreshold^2)
   step <- sqrt(stepsq)
@@ -192,6 +196,10 @@ fitSCRIBE <- function(Y, bat_ind, bio_ind, burn=50, burn_start=500, K=500, max_i
     Nu <- colMeans(bg_av)
     Sigma <- sqrt(colMeans(bgsq_av)-Nu^2)
     Lambda <- sweep(sweep(Mu, 1, gene_len, FUN='*')%*%Group_Matrix, 2, tot_read, FUN = '*')
+    Pi <- matrix(0, ncol=Cell_N, nrow=Gene_N)
+    for(batches in 1:N_batch){
+      Pi[, bat_ind == batch_name[batches]] <- Gamma[batches] + sweep(sweep(Pi[, bat_ind == batch_name[batches]], 2, Alpha[batches]*log(tot_read[bat_ind==batch_name[batches]]), FUN="+"), 1, Beta[batches]*log(gene_len), FUN="+")
+    }
     stepthreshold <- stepthreshold/2
     stepsq = ifelse(as.vector(bgsq_av-bg_av^2)>stepthreshold^2, as.vector(bgsq_av-bg_av^2), stepthreshold^2)
     step <- sqrt(stepsq)
@@ -203,15 +211,15 @@ fitSCRIBE <- function(Y, bat_ind, bio_ind, burn=50, burn_start=500, K=500, max_i
     cat("Sigma=", Sigma, '\n')
     j <- j + 1
   }
+  Lambda_bg <- matrix(0, ncol=Cell_N, nrow=Gene_N)
+  for(batches in 1:N_batch){
+    Lambda_bg[, bat_ind == batch_name[batches]] <- sweep(Lambda[, bat_ind == batch_name[batches]], 1, exp(bg_av[,batches]), FUN='*')
+  }
   meanNu <- mean(Nu)
   bg_av = bg_av - meanNu
   Nu = Nu - meanNu
   Mu = Mu * exp(meanNu)
   Z <- MH$Z/K
-  Lambda_bg <- matrix(0, ncol=Cell_N, nrow=Gene_N)
-  for(batches in 1:N_batch){
-    Lambda_bg[, bat_ind == batch_name[batches]] <- sweep(Lambda[, bat_ind == batch_name[batches]], 1, exp(bg_av[,batches]), FUN='*')
-  }
   Lambda <- sweep(Mu, 1, gene_len, FUN='*')%*%Group_Matrix
   # dropout imputation
   cat("start imputing ... ...")
