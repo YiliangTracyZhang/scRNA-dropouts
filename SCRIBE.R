@@ -162,7 +162,7 @@ fitSCRIBE <- function(Y, bat_ind, bio_ind, burn=50, burn_start=500, K=500, max_i
   stepsq = ifelse(as.vector(bgsq_av-bg_av^2)>stepthreshold^2, as.vector(bgsq_av-bg_av^2), stepthreshold^2)
   step <- sqrt(stepsq)
   j <- 1
-  while(j<=max_iter & max(abs((Alpha1-Alpha)/Alpha), abs((Beta1-Beta)/Beta), abs((Gamma1-Gamma)/Gamma), abs((Nu1-Nu)/Nu))>0.001){
+  while(j<=max_iter & max(abs((Alpha1-Alpha)/Alpha), abs((Beta1-Beta)/Beta), abs((Gamma1-Gamma)/Gamma), abs((Nu1-Nu)/Nu))>0.005){
     # E step
     MH <- MH_bg(Y, Y_zero, Cell_N, Gene_N, N_batch, batch_name, bat_ind, bg_av, Lambda, Pi, Nu, Sigma, step, burn, K)
     bg_av <- MH$bg_sum/K
