@@ -225,6 +225,7 @@ fitSCRIBE <- function(Y, bat_ind, bio_ind, burn=50, burn_start=500, K=500, max_i
   cat("start imputing ... ...")
   Y_impute <- matrix(0, ncol=Cell_N, nrow=Gene_N)
   Y_impute[Lambda_bg==0] <- 0
+  pb = txtProgressBar(0, sum(Lambda_bg!=0), style=3)
   for(imp in 1:sum(Lambda_bg!=0)){
     lambda_cg <- Lambda[Lambda_bg!=0][imp]
     lambda_bcg <- Lambda_bg[Lambda_bg!=0][imp]
@@ -246,6 +247,7 @@ fitSCRIBE <- function(Y, bat_ind, bio_ind, burn=50, burn_start=500, K=500, max_i
     else{
       Y_impute[Lambda_bg!=0][imp] <- NA
     }
+    setTxtProgressBar(pb, imp)
   }
   Y_impute[Y_zero] <- Z[Y_zero] * Y_impute[Y_zero] + (1 - Z[Y_zero]) * rpois(sum(Y_zero), Lambda[Y_zero])
   return(list(Mu=Mu, Alpha=Alpha, Beta=Beta, Gamma=Gamma, Nu=Nu, Sigma=Sigma, 
